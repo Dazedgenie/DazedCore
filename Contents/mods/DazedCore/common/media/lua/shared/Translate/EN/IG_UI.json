@@ -1,0 +1,16 @@
+{
+    "IGUI_DazedCore_Options": "Dazed Utilities",
+    "IGUI_DazedCore_PickTitle": "Choose buildings",
+    "IGUI_DazedCore_PickHelp": "Click a building or a structure you built to add it; click it again to remove it.",
+    "IGUI_DazedCore_PickLegend": "Green: served. Yellow: a click adds it. Blue: a click removes it. Red: out of reach, or served by another.",
+    "IGUI_DazedCore_PickClear": "Remove all",
+    "IGUI_DazedCore_PickDone": "Done",
+    "IGUI_DazedCore_PickCount": "Served: {1}",
+    "IGUI_DazedCore_PickOne": "Connected building: {1} of 1",
+    "IGUI_DazedCore_PickBuilding": "Building, {1}, {2}",
+    "IGUI_DazedCore_PickStructure": "Your structure, {1}, {2}",
+    "IGUI_DazedCore_TileCount": "{1} squares",
+    "IGUI_DazedCore_TileCountOne": "{1} square",
+    "IGUI_DazedCore_FloorCount": "{1} floors",
+    "IGUI_DazedCore_FloorCountOne": "{1} floor"
+}

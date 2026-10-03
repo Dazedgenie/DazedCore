@@ -1,0 +1,14 @@
+VERSION = 1,
+
+/* One switch for the Dazed family: Custom keeps every option as set; Easy, Standard, Realistic and Hardcore
+   replace the options each Dazed mod lists in its own presets. Enum values are 1-based. */
+
+option DazedCore.Preset
+{
+    type = enum,
+    numValues = 5,
+    default = 1,
+    page = DazedCore,
+    translation = DazedCore_Preset,
+    valueTranslation = DazedCore_Preset,
+}

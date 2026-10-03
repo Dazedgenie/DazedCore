@@ -1,0 +1,64 @@
+# Dazed Utilities: Core
+
+Shared library for the Dazed Utilities mods for Project Zomboid Build 42. It does nothing on its own.
+**Required by** *Dazed Utilities: Plumbing* 0.10 and later and *Dazed Utilities: Power*.
+
+- **Mod ID:** `DazedCore` · **Version:** 1.1.0 · **Game:** Build 42 · **Load order:** before any other Dazed mod (`require=DazedCore` in theirs)
+
+## What it holds
+
+| Module | Namespace | For |
+|---|---|---|
+| `DC_HeavyParts` | `DazedCore.Heavy` (also the global `DazedHeavy`, version 2) | Anything over 30 kg is carried as parts, "(1/2)" and "(2/2)", like a bed or shelving; placing needs every part. A mod registers the item prefixes it owns. Upgrades an older version-1 copy left by Plumbing 0.9 / Dazed Power 0.9 in place. |
+| `DC_Power` | `DazedCore.Power` | The registry the mods talk through. A power mod registers a **provider** (`isPowered(obj)`); a mod with a machine that needs power registers a **load** (`match`, `watts`, `working`). `isPowered(obj)` answers for any object: wired, or a powered square. |
+| `DC_Buildings`, `DC_Reach` | `DazedCore.Buildings`, `DazedCore.Reach` | Which squares a building is: map houses with their basements and wall shell, and player-built structures read from region data so a dedicated server agrees with its clients. Footprints, rects and their string codecs. |
+| `DC_Picker` (client) | `DazedCore.Picker` | The Building Picker window and overlay. A mod opens it with a *spec* saying what its part serves, how far it reaches and what to send on a click. |
+| `DC_Sync` | `DazedCore.Sync` | Who is the authority, tracked global ModData tables sent to clients, a `version` counter for caches. |
+| `DC_Note` (+ `DC_NoteClient`) | `DazedCore.Note` | A line above a player's head; on a server the translation key travels and the client shows it. `limited` for refusals the cursor asks every frame. |
+| `DC_Migrate` | `DazedCore.Migrate` | Schema versions on saved ModData, so a later release can change what it stores. |
+| `DC_Options` (client) | `DazedCore.Options` | One "Dazed Utilities" page in the Mods options tab that every mod adds its tick boxes to. |
+| `DC_Report` (client) | `DazedCore.Report` | One Error Magnifier report with a section per mod. |
+| `DC_Util` | `DazedCore.Util` | `try`, tile `prop`/`propIs`, translated `txt`/`count`, `haloNote`, `worldHours`, `squareAt`. |
+| `DC_Boot` | `DazedCore.Boot` | Loads the shared modules and prints `DazedCore: ready -- ...` with the mods that registered. |
+
+## Using it from a mod
+
+```lua
+require "DazedCore/DC_Boot"
+DazedCore.Boot.register("DazedPlumbing", "0.10.0")
+DazedCore.Heavy.register("Base.Dazed")                 -- my heavy items come apart
+DazedCore.Sync.track("DazedPlumbNet")                  -- keep this global table in step
+DazedCore.Power.registerLoad({ id = "dazed_pump", kind = "waterpump", match = isPump, watts = watts, working = working })
+DazedCore.Note.limited(character, "IGUI_DazedPlumb_XLOutdoors")
+```
+
+The picker takes a spec; see the header of `DC_Picker.lua` for every field. The caller decodes its own stored
+targets with `DazedCore.Buildings.decodeTargets` and `DazedCore.Reach.decodeRects`.
+
+## Tests
+
+`tools/tests/run_all.sh` runs the headless checks with any Lua 5.3+ on PATH as `lua`
+(`luatex --luaonly` works too). `engine_stub.lua` is the shared stand-in for the game engine; the other
+Dazed mods' tests use it as well.
+
+## Tools
+
+`tools/pzformat` reads and writes `.pack` and `.tiles` files; `tools/blender/pz_sprite_forge.py` is the render rig
+the Dazed mods' sprites are made with; `pack_art.py` and `pack_tiles.py` put rendered cells into a pack and check a
+tiledef. All need Python 3 with Pillow (and Blender 4.2+ for the rig).
+
+## Credits and licence
+
+`DC_Buildings`, `DC_Reach` and `DC_Picker` are adapted from **Off-Grid: Solar Power** by cakcan
+(https://github.com/turret001/OffGrid, Steam Workshop 3789425624), CC BY-NC-SA 4.0, with namespace and API changes
+so other mods can use them; see `NOTICE.md` for what changed. The whole mod is therefore licensed
+**CC BY-NC-SA 4.0** (`LICENSE`). `tools/pzformat` and `tools/blender/pz_sprite_forge.py` are from pz-sprite-forge (MIT);
+its licence ships in those folders.
+
+## Changes
+
+- **1.1.0.** Sandbox presets: `DazedCore.Preset` (Custom, Easy, Standard, Realistic, Hardcore) lets any Dazed mod
+  register `{ easy, standard, realistic, hardcore }` values per option (`DazedCore.Preset.register`); `DazedCore.Util.sandbox`
+  reads through them. Custom changes nothing. Test: `preset_test.lua`.
+- **1.0.0.** First release. Heavy parts v2 (both engine argument orders, upgrades a v1 copy in place), power registry,
+  building resolver and picker, sync, notes, migrate, shared options page and report.
