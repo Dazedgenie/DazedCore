@@ -5,7 +5,7 @@
      of. The newest copy loaded wins and upgrades an older one in place, so a mod still carrying
      version 1 keeps working alongside this one. ]]
 
-local VERSION = 2
+local VERSION = 3
 if DazedHeavy and (DazedHeavy.VERSION or 0) >= VERSION then
     DazedCore = DazedCore or {}
     DazedCore.Heavy = DazedHeavy
@@ -151,6 +151,15 @@ function H.consume(character, item)
     item:getModData()[H.KEY] = nil
 end
 
+-- One console line per message every few seconds, so a refusal shows in console.txt without flooding it.
+local said = {}
+function H.say(msg)
+    local now = getTimestampMs and getTimestampMs() or 0
+    if said[msg] and now - said[msg] < 5000 then return end
+    said[msg] = now
+    print("DazedCore: " .. msg)
+end
+
 ------------------------------------------------------------ the game's pick-up and placing
 pcall(require, "Moveables/ISMoveableSpriteProps")       -- absent in a headless test
 
@@ -182,7 +191,10 @@ if ISMoveableSpriteProps and not H.wrapped2 then
     function ISMoveableSpriteProps:canPlaceMoveableInternal(...)
         local character, _, item = placeArgs(...)
         character = placer(character)
-        if item and H.partsOf(item) and character and not H.complete(character, item) then return false end
+        if item and H.partsOf(item) and character and not H.complete(character, item) then
+            H.say("can't place " .. tostring(item.getFullType and item:getFullType()) .. ": not every part is on you")
+            return false
+        end
         return canPlace0(self, ...)
     end
 
@@ -195,6 +207,29 @@ if ISMoveableSpriteProps and not H.wrapped2 then
             H.consume(character, item)
         end
         return place0(self, ...)
+    end
+end
+
+-- A 2x2 piece of furniture (ForceSingleItem) is looked up by its whole name, "Name (1/1)"; a part set
+-- carries "Name (1/2)", so the first part of a complete set stands in for the whole item.
+if ISMoveableSpriteProps and ISMoveableSpriteProps.findInInventoryMultiSprite and not H.wrapped3 then
+    H.wrapped3 = true
+    local find0 = ISMoveableSpriteProps.findInInventoryMultiSprite
+    function ISMoveableSpriteProps:findInInventoryMultiSprite(character, name, ...)
+        local a, b = find0(self, character, name, ...)
+        if a or not (character and self.customItem and type(name) == "string") then return a, b end
+        if string.sub(name, -6) ~= " (1/1)" then return a, b end
+        local inv = character:getInventory()
+        local items = inv and inv:getItems()
+        for k = 0, (items and items:size() or 0) - 1 do
+            local it = items:get(k)
+            local p = it:getFullType() == self.customItem and H.partsOf(it)
+            if p and p.i == 1 and character:getPrimaryHandItem() ~= it and character:getSecondaryHandItem() ~= it
+                    and H.complete(character, it) then
+                return it, inv
+            end
+        end
+        return a, b
     end
 end
 

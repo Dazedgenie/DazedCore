@@ -3,7 +3,7 @@
 Shared library for the Dazed Utilities mods for Project Zomboid Build 42. It does nothing on its own.
 **Required by** *Dazed Utilities: Plumbing* 0.10 and later and *Dazed Utilities: Power*.
 
-- **Mod ID:** `DazedCore` · **Version:** 1.1.0 · **Game:** Build 42 · **Load order:** before any other Dazed mod (`require=DazedCore` in theirs)
+- **Mod ID:** `DazedCore` · **Version:** 1.1.1 · **Game:** Build 42 · **Load order:** before any other Dazed mod (`require=DazedCore` in theirs)
 
 ## What it holds
 
@@ -57,6 +57,9 @@ its licence ships in those folders.
 
 ## Changes
 
+- **1.1.1.** Heavy parts v3: a 2x2 piece of furniture carried as parts can be placed (the game looks it up as
+  "Name (1/1)"; the first part of a complete set now answers). A refused placement because a part is missing writes
+  `DazedCore: can't place ...` to the console.
 - **1.1.0.** Sandbox presets: `DazedCore.Preset` (Custom, Easy, Standard, Realistic, Hardcore) lets any Dazed mod
   register `{ easy, standard, realistic, hardcore }` values per option (`DazedCore.Preset.register`); `DazedCore.Util.sandbox`
   reads through them. Custom changes nothing. Test: `preset_test.lua`.

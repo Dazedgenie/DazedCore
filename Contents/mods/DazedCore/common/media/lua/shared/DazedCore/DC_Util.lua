@@ -2,7 +2,7 @@
      properties, translated text with {1} placeholders, and halo notes. ]]
 
 DazedCore = DazedCore or {}
-DazedCore.VERSION = "1.1.0"
+DazedCore.VERSION = "1.1.1"
 DazedCore.Util = DazedCore.Util or {}
 local U = DazedCore.Util
 

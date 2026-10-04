@@ -44,7 +44,7 @@ package.path = root .. "/shared/?.lua;" .. package.path
 -- An older mod's version-1 copy is already loaded: the core must upgrade it in place.
 DazedHeavy = { VERSION = 1, prefixes = { ["Base.OffGrid"] = true }, wrapped = true, swept = true }
 local H = require "DazedCore/DC_HeavyParts"
-check(H == DazedHeavy and H.VERSION == 2, "upgrades the v1 table in place")
+check(H == DazedHeavy and H.VERSION == 3, "upgrades the v1 table in place")
 check(H.prefixes["Base.OffGrid"], "keeps the old mod's registered prefix")
 check(DazedCore.Heavy == H, "exposed as DazedCore.Heavy")
 check(H.wrapped2 == true, "installs its own wrappers even when v1 wrapped")
