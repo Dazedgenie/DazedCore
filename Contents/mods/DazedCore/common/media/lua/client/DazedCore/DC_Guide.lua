@@ -1,4 +1,4 @@
---[[ Dazed Utilities: Core -- the in-game guide.
+--[[ Dazed Utilities: Core -- the in-game guide for the whole Dazed suite.
 
      A window with one tab per Dazed mod that is loaded and a list of short pages in each, opened from a
      button at the foot of the vanilla sidebar. The text lives in the translation files
@@ -32,6 +32,16 @@ G.add({ id = "plumbing", titleKey = "IGUI_DazedGuide_Book_plumbing",
         present = function() return DazedPlumb ~= nil end,
         pages = { "PlumbStart", "PlumbPumps", "PlumbQuality", "PlumbRain", "PlumbMain", "PlumbFuel",
                   "PlumbDigester", "PlumbSprinkler" } })
+-- The rest of the Dazed suite: each tab shows only while its mod is enabled.
+G.add({ id = "butchery", titleKey = "IGUI_DazedGuide_Book_butchery",
+        present = function() return DazedButchery ~= nil end,
+        pages = { "ButchStart", "ButchCut", "ButchGrades", "ButchField", "ButchEdge" } })
+G.add({ id = "cooking", titleKey = "IGUI_DazedGuide_Book_cooking",
+        present = function() return DazedCooking ~= nil end,
+        pages = { "CookStart", "CookMood", "CookPortion" } })
+G.add({ id = "dank", titleKey = "IGUI_DazedGuide_Book_dank",
+        present = function() return CannabisMod ~= nil end,
+        pages = { "DankStart", "DankLights", "DankBags", "DankHydro", "DankRooms", "DankClimate", "DankDrying", "DankSmoking" } })
 
 local function txt(key)
     local t = getText(key)
