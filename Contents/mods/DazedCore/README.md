@@ -3,7 +3,7 @@
 Shared library for the Dazed Utilities mods for Project Zomboid Build 42. It does nothing on its own.
 **Required by** *Dazed Utilities: Plumbing* 0.10 and later and *Dazed Utilities: Power*.
 
-- **Mod ID:** `DazedCore` · **Version:** 1.2.0 · **Game:** Build 42 · **Load order:** before any other Dazed mod (`require=DazedCore` in theirs)
+- **Mod ID:** `DazedCore` · **Version:** 1.3.0 · **Game:** Build 42 · **Load order:** before any other Dazed mod (`require=DazedCore` in theirs)
 
 ## What it holds
 
@@ -18,6 +18,7 @@ Shared library for the Dazed Utilities mods for Project Zomboid Build 42. It doe
 | `DC_Migrate` | `DazedCore.Migrate` | Schema versions on saved ModData, so a later release can change what it stores. |
 | `DC_Options` (client) | `DazedCore.Options` | One "Dazed Utilities" page in the Mods options tab that every mod adds its tick boxes to. |
 | `DC_Report` (client) | `DazedCore.Report` | One Error Magnifier report with a section per mod. |
+| `DC_Climate` | `DazedCore.Climate` | How warm it is: `outdoor()`, `temperatureAt(square)`, `forecast(offset)`. Dazed Climate registers as the provider (room temperatures, its own curve); without it the answers are the game's own. |
 | `DC_Util` | `DazedCore.Util` | `try`, tile `prop`/`propIs`, translated `txt`/`count`, `haloNote`, `worldHours`, `squareAt`. |
 | `DC_Boot` | `DazedCore.Boot` | Loads the shared modules and prints `DazedCore: ready -- ...` with the mods that registered. |
 
@@ -57,6 +58,9 @@ its licence ships in those folders.
 
 ## Changes
 
+- **1.3.0.**
+  - **Climate lookup:** `DazedCore.Climate` answers `outdoor()`, `temperatureAt(square)` and `forecast(offset)` for
+    every Dazed mod. Dazed Climate registers as the provider; without it the game's own figures are used.
 - **1.2.0.**
   - **Guide window:** a book button at the foot of the left sidebar opens the Dazed Utilities Guide, with tabs for
     Basics, Power and Plumbing (only the mods you have). Pages live in `IG_UI.json` (`IGUI_DazedGuide_*`); the button
