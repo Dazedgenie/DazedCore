@@ -90,5 +90,43 @@ inv:Remove(inv.list[#inv.list])            -- lose the other part
 check(ISMoveableSpriteProps:canPlaceMoveableInternal(sq, gen2, "sprite") == false, "refused without the set (old order)")
 check(ISMoveableSpriteProps:placeMoveableInternal(sq, gen2, "sprite") == nil, "placing refused too")
 
+-- Performance: the sweep leaves foreign items alone, the type memo follows new prefixes, the cursor memo lets go.
+local touched = 0
+local plain = Item("Base.Other")
+function plain:getModData() touched = touched + 1 return self.md end
+local inv3 = Inv()
+inv3:AddItem(plain)
+local ch3 = { getInventory = function() return inv3 end }
+H.splitAll(ch3)
+H.splitAll(ch3)
+check(touched == 0, "the sweep never opens a foreign item's ModData")
+H.register("Base.Other")
+H.splitAll(ch3)
+check(#inv3.list == 3 and H.partsOf(plain) and H.partsOf(plain).n == 3, "a prefix registered later is honoured at once")
+H.prefixes["Base.Other"] = nil
+local late = Item("Base.Other"); inv3:AddItem(late)
+H.splitAll(ch3)
+check(not H.partsOf(late), "a prefix taken out of the table directly is noticed by the next sweep")
+
+local clock = 1000
+getTimestampMs = function() return clock end
+local inv4 = Inv()
+local g4 = Item("Base.DazedPropaneGen"); inv4:AddItem(g4)
+local ch4 = { getInventory = function() return inv4 end }
+H.splitAll(ch4)
+local asks, complete0 = 0, H.complete
+H.complete = function(...) asks = asks + 1 return complete0(...) end
+check(H.completeCached(ch4, g4) and H.completeCached(ch4, g4) and asks == 1, "cursor memo: one inventory walk serves the next frames")
+inv4:Remove(inv4.list[2])
+check(not H.completeCached(ch4, g4) and asks == 2, "cursor memo: a part leaving the inventory is seen at once")
+clock = clock + H.COMPLETE_TTL_MS
+H.completeCached(ch4, g4)
+check(asks == 3, "cursor memo: an old answer is asked again")
+getTimestampMs = nil
+H.completeCached(ch4, g4)
+H.completeCached(ch4, g4)
+check(asks == 5, "cursor memo: without a clock every call walks")
+H.complete = complete0
+
 print(string.format("heavy_test: %d checks, %d failed", checks, fails))
 os.exit(fails == 0 and 0 or 1)

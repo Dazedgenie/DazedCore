@@ -3,7 +3,7 @@
 Shared library for the Dazed Utilities mods for Project Zomboid Build 42. It does nothing on its own.
 **Required by** *Dazed Utilities: Plumbing* 0.10 and later and *Dazed Utilities: Power*.
 
-- **Mod ID:** `DazedCore` · **Version:** 1.1.1 · **Game:** Build 42 · **Load order:** before any other Dazed mod (`require=DazedCore` in theirs)
+- **Mod ID:** `DazedCore` · **Version:** 1.2.0 · **Game:** Build 42 · **Load order:** before any other Dazed mod (`require=DazedCore` in theirs)
 
 ## What it holds
 
@@ -57,6 +57,18 @@ its licence ships in those folders.
 
 ## Changes
 
+- **1.2.0.**
+  - **Guide window:** a book button at the foot of the left sidebar opens the Dazed Utilities Guide, with tabs for
+    Basics, Power and Plumbing (only the mods you have). Pages live in `IG_UI.json` (`IGUI_DazedGuide_*`); the button
+    can be hidden on the Dazed Utilities options page.
+  - **Translation kit:** `tools/translation_kit.py start|check` and `TRANSLATING.md`.
+  - **Place trace:** when the Place cursor shows nothing for a Dazed item, one `DazedCore: place cursor shows nothing
+    for ...` console line says why.
+  - Performance: the heavy-parts minute sweep remembers which item types are a mod's own and only opens those items,
+    instead of reading the ModData of every item (and bag) every player carries; it no longer copies each container.
+  - Performance: while the place cursor shows a heavy part, the all-parts check is reused for up to 250 ms unless the
+    inventory changes size (placing still checks afresh). The picker's hover and the place-trace check build no strings
+    per frame. Tests: new checks in `heavy_test.lua`.
 - **1.1.1.** Heavy parts v3: a 2x2 piece of furniture carried as parts can be placed (the game looks it up as
   "Name (1/1)"; the first part of a complete set now answers). A refused placement because a part is missing writes
   `DazedCore: can't place ...` to the console.

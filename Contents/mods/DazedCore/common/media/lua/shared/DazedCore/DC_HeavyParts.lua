@@ -20,15 +20,39 @@ H.LIMIT = 30                                -- most one part may weigh, in kg
 H.KEY = "dazedParts"                        -- item ModData: { i = this part, n = how many }
 H.prefixes = H.prefixes or {}
 
---- A mod names the item types it owns (a prefix such as "Base.Dazed"); only those are ever split.
-function H.register(prefix) H.prefixes[prefix] = true end
+-- Item type -> owned or not, so the minute sweep asks each type once rather than per item and per prefix.
+local ownedMemo, memoPrefixes, memoCount = {}, nil, -1
 
-local function owned(fullType)
-    if type(fullType) ~= "string" then return false end
+--- Drop the remembered answers when the registered prefixes are not the ones they were made from.
+local function checkOwnedMemo()
+    local n = 0
+    for _ in pairs(H.prefixes) do n = n + 1 end
+    if n ~= memoCount or memoPrefixes ~= H.prefixes then
+        ownedMemo, memoPrefixes, memoCount = {}, H.prefixes, n
+    end
+end
+
+--- A mod names the item types it owns (a prefix such as "Base.Dazed"); only those are ever split.
+function H.register(prefix)
+    H.prefixes[prefix] = true
+    ownedMemo, memoCount = {}, -1
+end
+
+local function ownedUncached(fullType)
     for p in pairs(H.prefixes) do
         if string.sub(fullType, 1, #p) == p then return true end
     end
     return false
+end
+
+local function owned(fullType)
+    if type(fullType) ~= "string" then return false end
+    local hit = ownedMemo[fullType]
+    if hit == nil then
+        hit = ownedUncached(fullType)
+        ownedMemo[fullType] = hit
+    end
+    return hit
 end
 
 --- The weight a whole one of this item has (its script weight), or nil.
@@ -91,19 +115,30 @@ function H.split(item, inv)
 end
 
 --- Every whole heavy item a character carries, split (bags included).
+--  Only items of a registered type are touched; the lists are made only when a container has something to do.
+local function walkSplit(cont)
+    local items = cont:getItems()
+    local bags, todo = nil, nil
+    for k = 0, items:size() - 1 do
+        local it = items:get(k)
+        if it.IsInventoryContainer and it:IsInventoryContainer() and it.getInventory then
+            bags = bags or {}
+            bags[#bags + 1] = it
+        elseif owned(it:getFullType()) then
+            todo = todo or {}
+            todo[#todo + 1] = it
+        end
+    end
+    -- Collected before any split, so the parts a split adds are not walked again (the old copy-the-list rule).
+    if bags then for i = 1, #bags do walkSplit(bags[i]:getInventory()) end end
+    if todo then for i = 1, #todo do H.split(todo[i], cont) end end
+end
+
 function H.splitAll(character)
     local inv = character and character.getInventory and character:getInventory()
     if not inv then return end
-    local function walk(cont)
-        local items = cont:getItems()
-        local list = {}
-        for k = 0, items:size() - 1 do list[#list + 1] = items:get(k) end
-        for _, it in ipairs(list) do
-            if it.IsInventoryContainer and it:IsInventoryContainer() and it.getInventory then walk(it:getInventory())
-            else H.split(it, cont) end
-        end
-    end
-    walk(inv)
+    checkOwnedMemo()
+    walkSplit(inv)
 end
 
 --- The parts of a set a character has on them: { [i] = item } for items of `fullType` with `n` parts.
@@ -131,6 +166,26 @@ function H.complete(character, item)
     local found = H.gather(character, item:getFullType(), p.n)
     for i = 1, p.n do if not found[i] then return false end end
     return true
+end
+
+-- The place cursor asks H.complete every frame; its answer is kept briefly and dropped when the main inventory changes size.
+H.COMPLETE_TTL_MS = 250
+local completeMemo = nil         -- the last answer: { item, ch, at, size, yes }; the cursor only ever asks about one item
+
+--- H.complete for the per-frame cursor check. Placing itself always asks H.complete afresh.
+function H.completeCached(character, item)
+    local now = getTimestampMs and getTimestampMs()
+    if type(now) ~= "number" or now <= 0 then return H.complete(character, item) end
+    local inv = character.getInventory and character:getInventory()
+    local items = inv and inv.getItems and inv:getItems()
+    local size = items and items:size() or -1
+    local c = completeMemo
+    if c and c.item == item and c.ch == character and c.size == size and now >= c.at and now - c.at < H.COMPLETE_TTL_MS then
+        return c.yes
+    end
+    local yes = H.complete(character, item)
+    completeMemo = { item = item, ch = character, at = now, size = size, yes = yes }
+    return yes
 end
 
 --- Placing: take the other parts away, and leave the placed one whole again.
@@ -191,7 +246,7 @@ if ISMoveableSpriteProps and not H.wrapped2 then
     function ISMoveableSpriteProps:canPlaceMoveableInternal(...)
         local character, _, item = placeArgs(...)
         character = placer(character)
-        if item and H.partsOf(item) and character and not H.complete(character, item) then
+        if item and H.partsOf(item) and character and not H.completeCached(character, item) then
             H.say("can't place " .. tostring(item.getFullType and item:getFullType()) .. ": not every part is on you")
             return false
         end

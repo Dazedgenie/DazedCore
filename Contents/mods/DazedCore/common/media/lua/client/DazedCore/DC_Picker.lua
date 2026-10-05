@@ -112,9 +112,9 @@ local function hover(st, pn, z)
         st.hover, st.hoverKey = nil, nil
         return
     end
-    local hk = sx .. "," .. sy .. "," .. z
-    if st.hoverKey == hk then return end
-    st.hoverKey = hk
+    -- Compared as numbers: this runs every frame, and a key string would be built every frame to say "same square".
+    if st.hoverKey and st.hx == sx and st.hy == sy and st.hz == z then return end
+    st.hoverKey, st.hx, st.hy, st.hz = true, sx, sy, z
     if st.hover and st.hover.fp and R.fpHas(st.hover.fp, sx, sy, z) then return end
     st.hover = nil
     local list = served(st)
