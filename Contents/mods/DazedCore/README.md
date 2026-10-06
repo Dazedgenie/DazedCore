@@ -3,7 +3,7 @@
 Shared library for the Dazed Utilities mods for Project Zomboid Build 42. It does nothing on its own.
 **Required by** *Dazed Utilities: Plumbing* 0.10 and later and *Dazed Utilities: Power*.
 
-- **Mod ID:** `DazedCore` · **Version:** 1.2.0 · **Game:** Build 42 · **Load order:** before any other Dazed mod (`require=DazedCore` in theirs)
+- **Mod ID:** `DazedCore` · **Version:** 1.3.0 · **Game:** Build 42 · **Load order:** before any other Dazed mod (`require=DazedCore` in theirs)
 
 ## What it holds
 
@@ -16,6 +16,8 @@ Shared library for the Dazed Utilities mods for Project Zomboid Build 42. It doe
 | `DC_Sync` | `DazedCore.Sync` | Who is the authority, tracked global ModData tables sent to clients, a `version` counter for caches. |
 | `DC_Note` (+ `DC_NoteClient`) | `DazedCore.Note` | A line above a player's head; on a server the translation key travels and the client shows it. `limited` for refusals the cursor asks every frame. |
 | `DC_Migrate` | `DazedCore.Migrate` | Schema versions on saved ModData, so a later release can change what it stores. |
+| `DC_Detect` | `DazedCore.Detect` | Which mods are loaded. A feature registers the mod IDs that already do it (`yieldTo`); `yields(feature)` says whether to step aside, logged once. |
+| `DC_Net` | `DazedCore.Net` | Client asks, authority acts: `on(module, command, fn, every)` server handlers with a per-player rate limit, `send` (runs at once in single player), `reply`/`onClient` for answers, `near` range check. |
 | `DC_Options` (client) | `DazedCore.Options` | One "Dazed Utilities" page in the Mods options tab that every mod adds its tick boxes to. |
 | `DC_Report` (client) | `DazedCore.Report` | One Error Magnifier report with a section per mod. |
 | `DC_Util` | `DazedCore.Util` | `try`, tile `prop`/`propIs`, translated `txt`/`count`, `haloNote`, `worldHours`, `squareAt`. |
@@ -57,6 +59,9 @@ its licence ships in those folders.
 
 ## Changes
 
+- **1.3.0.**
+  - **Detect:** `DazedCore.Detect` finds loaded mods (a leading backslash in B42 server lists is ignored) so a feature can yield to another mod that already does it.
+  - **Net:** `DazedCore.Net` routes requests to the authority and answers back, with per-player rate limits and a `near` check for handlers. Test: `net_test.lua`.
 - **1.2.0.**
   - **Guide window:** a book button at the foot of the left sidebar opens the Dazed Utilities Guide, with tabs for
     Basics, Power and Plumbing (only the mods you have). Pages live in `IG_UI.json` (`IGUI_DazedGuide_*`); the button
