@@ -10,6 +10,7 @@ require "DazedCore/DC_Power"
 require "DazedCore/DC_Migrate"
 require "DazedCore/DC_Reach"
 require "DazedCore/DC_Buildings"
+require "DazedCore/DC_Climate"
 require "DazedCore/DC_Detect"
 require "DazedCore/DC_Net"
 
