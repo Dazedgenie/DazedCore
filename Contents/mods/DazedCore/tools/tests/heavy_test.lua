@@ -123,10 +123,24 @@ clock = clock + H.COMPLETE_TTL_MS
 H.completeCached(ch4, g4)
 check(asks == 3, "cursor memo: an old answer is asked again")
 getTimestampMs = nil
+
 H.completeCached(ch4, g4)
 H.completeCached(ch4, g4)
 check(asks == 5, "cursor memo: without a clock every call walks")
 H.complete = complete0
+
+-- The whole-item sweep runs every ten game minutes, not every minute (the v1 copy above had set `swept`).
+H.swept, H.VERSION = nil, 2
+package.loaded["DazedCore/DC_HeavyParts"] = nil
+require "DazedCore/DC_HeavyParts"
+check(#Events.EveryTenMinutes.handlers >= 1 and #Events.EveryOneMinute.handlers == 0, "sweep hooked on EveryTenMinutes")
+local inv5 = Inv()
+local g5 = Item("Base.DazedPropaneGen"); inv5:AddItem(g5)
+local ch5 = { getInventory = function() return inv5 end }
+getNumActivePlayers = function() return 1 end
+getSpecificPlayer = function() return ch5 end
+for _, h in ipairs(Events.EveryTenMinutes.handlers) do h() end
+check(H.partsOf(g5) and #inv5.list == 2, "the ten-minute sweep splits a whole item")
 
 print(string.format("heavy_test: %d checks, %d failed", checks, fails))
 os.exit(fails == 0 and 0 or 1)

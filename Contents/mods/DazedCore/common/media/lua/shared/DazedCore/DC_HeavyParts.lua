@@ -20,7 +20,7 @@ H.LIMIT = 30                                -- most one part may weigh, in kg
 H.KEY = "dazedParts"                        -- item ModData: { i = this part, n = how many }
 H.prefixes = H.prefixes or {}
 
--- Item type -> owned or not, so the minute sweep asks each type once rather than per item and per prefix.
+-- Item type -> owned or not, so the sweep asks each type once rather than per item and per prefix.
 local ownedMemo, memoPrefixes, memoCount = {}, nil, -1
 
 --- Drop the remembered answers when the registered prefixes are not the ones they were made from.
@@ -233,7 +233,7 @@ end
 if ISMoveableSpriteProps and not H.wrapped2 then
     H.wrapped2 = true
 
-    -- After a pick-up, the new item comes apart at once (the minute check below catches crafting and loot).
+    -- After a pick-up, the new item comes apart at once (the ten-minute sweep below catches crafting and loot).
     local pick0 = ISMoveableSpriteProps.pickUpMoveable
     function ISMoveableSpriteProps:pickUpMoveable(character, ...)
         local a, b = pick0(self, character, ...)
@@ -288,7 +288,7 @@ if ISMoveableSpriteProps and ISMoveableSpriteProps.findInInventoryMultiSprite an
     end
 end
 
--- Whatever reached an inventory whole (crafted, looted, an older save) comes apart within a minute.
+-- Whatever reached an inventory whole (crafted, looted, an older save) comes apart within ten game minutes.
 local function sweep()
     if isClient and isClient() then return end
     local players = {}
@@ -303,9 +303,9 @@ local function sweep()
     end
     for _, p in ipairs(players) do pcall(H.splitAll, p) end
 end
-if Events and Events.EveryOneMinute and not H.swept then
+if Events and Events.EveryTenMinutes and not H.swept then
     H.swept = true
-    Events.EveryOneMinute.Add(sweep)
+    Events.EveryTenMinutes.Add(sweep)
 end
 
 return H
