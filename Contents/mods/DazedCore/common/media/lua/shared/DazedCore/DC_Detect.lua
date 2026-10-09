@@ -1,4 +1,4 @@
---[[ Dazed Utilities: Core -- which other mods are loaded, so a Dazed feature can step aside.
+--[[ Dazed Core -- which other mods are loaded, so a Dazed feature can step aside.
 
      A mod registers a feature with the mod IDs that already do it (`yieldTo`). `yields(feature)` answers
      whether any of them is active; the answer is cached, and one console line names each feature that yielded. ]]

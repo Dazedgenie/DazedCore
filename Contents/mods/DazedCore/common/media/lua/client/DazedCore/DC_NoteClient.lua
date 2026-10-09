@@ -1,4 +1,4 @@
---[[ Dazed Utilities: Core -- the client end of DC_Note: a key sent by the server is translated here. ]]
+--[[ Dazed Core -- the client end of DC_Note: a key sent by the server is translated here. ]]
 
 require "DazedCore/DC_Note"
 

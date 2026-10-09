@@ -1,4 +1,4 @@
---[[ Dazed Utilities: Core -- one place every Dazed mod asks how warm it is. A climate mod (Dazed Climate) registers
+--[[ Dazed Core -- one place every Dazed mod asks how warm it is. A climate mod (Dazed Climate) registers
      itself as the provider; without one the answers come from the game, so no mod needs Dazed Climate to run. ]]
 
 require "DazedCore/DC_Util"

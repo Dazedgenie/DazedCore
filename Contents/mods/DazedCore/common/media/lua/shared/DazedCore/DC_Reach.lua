@@ -1,4 +1,4 @@
---[[ Dazed Utilities: Core -- (from Dazed Power by cakcan, CC BY-NC-SA 4.0) where the extra power goes: the arithmetic of reach.
+--[[ Dazed Core -- (from Dazed Power by cakcan, CC BY-NC-SA 4.0) where the extra power goes: the arithmetic of reach.
 
      Pure. Numbers and tables in, numbers and tables out, no engine calls, so
      every rule here is asserted headlessly (tests/test_reach.py) and again

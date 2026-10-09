@@ -1,4 +1,4 @@
---[[ Dazed Utilities: Core -- one Error Magnifier report for every Dazed mod. A mod adds a section
+--[[ Dazed Core -- one Error Magnifier report for every Dazed mod. A mod adds a section
      with R.add(id, fn); fn returns a table and runs only when the player presses Copy. Registered
      on OnGameStart, and only when Error Magnifier is among the activated mods. ]]
 
@@ -8,7 +8,7 @@ DazedCore.Report = DazedCore.Report or {}
 local R = DazedCore.Report
 
 R.MOD_ID = "DazedCore"
-R.DISPLAY = "Dazed Utilities"
+R.DISPLAY = "Dazed Core"
 R.sections = R.sections or {}
 R.order = R.order or {}
 

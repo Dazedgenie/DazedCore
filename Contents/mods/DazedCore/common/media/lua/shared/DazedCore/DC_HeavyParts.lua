@@ -1,4 +1,4 @@
---[[ Dazed Utilities: Core -- anything over LIMIT kg is carried as parts like a bed or shelving
+--[[ Dazed Core -- anything over LIMIT kg is carried as parts like a bed or shelving
      ("Propane Generator (1/2)"), and placing it needs every part on you.
 
      Version 2 of the DazedHeavy library that Plumbing 0.9 and Dazed Power 0.9 each shipped a copy

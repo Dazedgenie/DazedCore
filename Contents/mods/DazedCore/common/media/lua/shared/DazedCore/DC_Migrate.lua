@@ -1,4 +1,4 @@
---[[ Dazed Utilities: Core -- schema versions on saved data, so a later release can change what
+--[[ Dazed Core -- schema versions on saved data, so a later release can change what
      it stores without a clean break. A mod stamps its ModData table with `stamp` when it first
      writes it, and runs `upgrade` with its list of steps when it reads it back. ]]
 

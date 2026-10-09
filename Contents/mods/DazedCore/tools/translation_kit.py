@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Translation kit for the Dazed Utilities mods.
+"""Translation kit for the Dazed mods.
 
     python3 translation_kit.py start <mod folder> <LANG>   # copy every missing EN key into Translate/<LANG>/
     python3 translation_kit.py check <mod folder> [LANG]   # report missing, extra and broken keys

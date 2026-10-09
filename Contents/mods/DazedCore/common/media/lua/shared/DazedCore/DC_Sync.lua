@@ -1,4 +1,4 @@
---[[ Dazed Utilities: Core -- who is in charge, and keeping clients in step.
+--[[ Dazed Core -- who is in charge, and keeping clients in step.
 
      The AUTHORITY (single player, or the server) owns every change to the world. A client never
      writes it. Global ModData tables a mod registers here with `track` are sent to clients by the

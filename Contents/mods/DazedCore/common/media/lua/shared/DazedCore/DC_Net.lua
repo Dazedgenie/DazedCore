@@ -1,4 +1,4 @@
---[[ Dazed Utilities: Core -- one way to ask the authority to change the world, and to answer a player.
+--[[ Dazed Core -- one way to ask the authority to change the world, and to answer a player.
 
      A mod registers server handlers with `on(module, command, fn)` and asks with `send`. On a client the
      request travels as a client command; in single player (or on the server itself) the handler runs at

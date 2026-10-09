@@ -1,10 +1,10 @@
 {
-    "Sandbox_DazedCore": "Dazed Utilities",
+    "Sandbox_DazedCore": "Dazed Core",
     "Sandbox_DazedCore_Preset": "Difficulty preset",
     "Sandbox_DazedCore_Preset_option1": "Custom (use the options below)",
     "Sandbox_DazedCore_Preset_option2": "Easy",
     "Sandbox_DazedCore_Preset_option3": "Standard",
     "Sandbox_DazedCore_Preset_option4": "Realistic",
     "Sandbox_DazedCore_Preset_option5": "Hardcore",
-    "Sandbox_DazedCore_Preset_tooltip": "Sets the options of every Dazed Utilities mod at once: output and capacity scales, cable cost, shock, ageing, storms, water main. Custom leaves each mod's own options alone; any other choice overrides them."
+    "Sandbox_DazedCore_Preset_tooltip": "Sets the options of every Dazed mod at once: output and capacity scales, cable cost, shock, ageing, storms, water main. Custom leaves each mod's own options alone; any other choice overrides them."
 }

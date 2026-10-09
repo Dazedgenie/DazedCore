@@ -1,4 +1,4 @@
---[[ Dazed Utilities: Core -- why the Place cursor shows no ghost for a Dazed item.
+--[[ Dazed Core -- why the Place cursor shows no ghost for a Dazed item.
 
      When the moveable cursor in place mode has a Dazed item selected but shows only the white box, one console
      line says what it was looking at, so a placement that silently fails can be traced. ]]

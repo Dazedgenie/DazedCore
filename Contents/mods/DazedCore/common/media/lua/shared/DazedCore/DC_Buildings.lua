@@ -1,4 +1,4 @@
---[[ Dazed Utilities: Core -- (from Dazed Power by cakcan, CC BY-NC-SA 4.0) which squares a building is.
+--[[ Dazed Core -- (from Dazed Power by cakcan, CC BY-NC-SA 4.0) which squares a building is.
 
      The Building Picker hands this file a clicked square, and Wire up the
      building hands it where a part stands. It answers with a TARGET: a map

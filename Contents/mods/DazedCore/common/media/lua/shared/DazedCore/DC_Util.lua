@@ -1,4 +1,4 @@
---[[ Dazed Utilities: Core -- small helpers every Dazed mod uses: guarded engine calls, tile
+--[[ Dazed Core -- small helpers every Dazed mod uses: guarded engine calls, tile
      properties, translated text with {1} placeholders, and halo notes. ]]
 
 DazedCore = DazedCore or {}

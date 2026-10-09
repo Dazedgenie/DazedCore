@@ -1,4 +1,4 @@
---[[ Dazed Utilities: Core -- one "Dazed Utilities" page in the Mods options tab that every Dazed
+--[[ Dazed Core -- one "Dazed Core" page in the Mods options tab that every Dazed
      mod adds its own tick boxes to. Client-side player preferences only; world rules are sandbox
      options. Registered at file load: MainOptions builds its Mods page when the main screen is
      constructed and only if PZAPI.ModOptions.Data is non-empty then, and mods load after this file. ]]

@@ -1,4 +1,4 @@
---[[ Dazed Utilities: Core -- (from Dazed Power by cakcan, CC BY-NC-SA 4.0) the Building Picker.
+--[[ Dazed Core -- (from Dazed Power by cakcan, CC BY-NC-SA 4.0) the Building Picker.
 
      A part that serves whole buildings (a Dazed Power controller, a Plumbing water main) opens a
      small window and an overlay. Every building and player-built structure the part serves is

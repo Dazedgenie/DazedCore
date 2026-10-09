@@ -1,4 +1,4 @@
---[[ Dazed Utilities: Core -- sandbox presets for the whole Dazed family.
+--[[ Dazed Core -- sandbox presets for the whole Dazed family.
 
      The Core's one option, DazedCore.Preset, picks Custom, Easy, Standard, Realistic or Hardcore. Each mod
      registers its page's values for the four named presets; while one is picked, those values replace what the

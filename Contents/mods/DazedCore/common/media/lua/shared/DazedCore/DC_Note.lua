@@ -1,4 +1,4 @@
---[[ Dazed Utilities: Core -- a short line to a player. A server sends the translation KEY (it has
+--[[ Dazed Core -- a short line to a player. A server sends the translation KEY (it has
      no translations); the client shows it (DC_NoteClient). Single player shows it at once. ]]
 
 require "DazedCore/DC_Util"

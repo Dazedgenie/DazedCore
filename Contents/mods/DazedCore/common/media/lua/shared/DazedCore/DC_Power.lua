@@ -1,4 +1,4 @@
---[[ Dazed Utilities: Core -- the power registry the Dazed mods talk through.
+--[[ Dazed Core -- the power registry the Dazed mods talk through.
 
      Two sides never name each other. A mod that MAKES power (Dazed Power's controllers) registers
      a PROVIDER: asked about an object, it answers true when it feeds that object by wire, nil when

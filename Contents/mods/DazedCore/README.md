@@ -1,9 +1,9 @@
-# Dazed Utilities: Core
+# Dazed Core
 
-Shared library for the Dazed Utilities mods for Project Zomboid Build 42. It does nothing on its own.
-**Required by** *Dazed Utilities: Plumbing* 0.10 and later and *Dazed Utilities: Power*.
+Shared library for the Dazed mods for Project Zomboid Build 42. It does nothing on its own.
+**Required by** *Dazed Plumbing* 0.10 and later and *Dazed Power*.
 
-- **Mod ID:** `DazedCore` · **Version:** 1.4.0 · **Game:** Build 42 · **Load order:** before any other Dazed mod (`require=DazedCore` in theirs)
+- **Mod ID:** `DazedCore` · **Version:** 1.4.1 · **Game:** Build 42 · **Load order:** before any other Dazed mod (`require=DazedCore` in theirs)
 
 ## What it holds
 
@@ -18,7 +18,7 @@ Shared library for the Dazed Utilities mods for Project Zomboid Build 42. It doe
 | `DC_Migrate` | `DazedCore.Migrate` | Schema versions on saved ModData, so a later release can change what it stores. |
 | `DC_Detect` | `DazedCore.Detect` | Which mods are loaded. A feature registers the mod IDs that already do it (`yieldTo`); `yields(feature)` says whether to step aside, logged once. |
 | `DC_Net` | `DazedCore.Net` | Client asks, authority acts: `on(module, command, fn, every)` server handlers with a per-player rate limit, `send` (runs at once in single player), `reply`/`onClient` for answers, `near` range check. |
-| `DC_Options` (client) | `DazedCore.Options` | One "Dazed Utilities" page in the Mods options tab that every mod adds its tick boxes to. |
+| `DC_Options` (client) | `DazedCore.Options` | One "Dazed Core" page in the Mods options tab that every mod adds its tick boxes to. |
 | `DC_Report` (client) | `DazedCore.Report` | One Error Magnifier report with a section per mod. |
 | `DC_Util` | `DazedCore.Util` | `try`, tile `prop`/`propIs`, `memo1` for one-argument lookups, translated `txt`/`count`, `haloNote`, `worldHours`, `squareAt`. |
 | `DC_Boot` | `DazedCore.Boot` | Loads the shared modules and prints `DazedCore: ready -- ...` with the mods that registered. |
@@ -59,6 +59,8 @@ its licence ships in those folders.
 
 ## Changes
 
+- **1.4.1.** Renamed to **Dazed Core** everywhere players see it: mod list, sandbox page, Mods options page, Error Magnifier report and the guide. The options page keeps its internal ID (`DazedUtilities`) so saved tick boxes carry over. Filled in `workshop.txt` with the Workshop description.
+
 - **1.4.0.**
   - **Sync:** `S.versions[key]` and `S.versionOf(key)` count changes per tracked table (on touch and on a client's receive); `S.version` is unchanged.
   - **Power:** a load may declare `prefix`, `matchName(spriteName)` and `byName = true` so `loadOf` skips or remembers `match` by sprite name; `W.clearNameMemo()`.
@@ -77,9 +79,9 @@ its licence ships in those folders.
   - **Detect:** `DazedCore.Detect` finds loaded mods (a leading backslash in B42 server lists is ignored) so a feature can yield to another mod that already does it.
   - **Net:** `DazedCore.Net` routes requests to the authority and answers back, with per-player rate limits and a `near` check for handlers. Test: `net_test.lua`.
 - **1.2.0.**
-  - **Guide window:** a book button at the foot of the left sidebar opens the Dazed Utilities Guide, with tabs for
+  - **Guide window:** a book button at the foot of the left sidebar opens the Dazed Mod Suite Guide, with tabs for
     Basics, Power and Plumbing (only the mods you have). Pages live in `IG_UI.json` (`IGUI_DazedGuide_*`); the button
-    can be hidden on the Dazed Utilities options page.
+    can be hidden on the Dazed Core options page.
   - **Translation kit:** `tools/translation_kit.py start|check` and `TRANSLATING.md`.
   - **Place trace:** when the Place cursor shows nothing for a Dazed item, one `DazedCore: place cursor shows nothing
     for ...` console line says why.

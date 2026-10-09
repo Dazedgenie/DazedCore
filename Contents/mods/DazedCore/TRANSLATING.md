@@ -1,4 +1,4 @@
-# Translating the Dazed Utilities mods
+# Translating the Dazed mods
 
 Every piece of text the players see lives in JSON files, one folder per language:
 

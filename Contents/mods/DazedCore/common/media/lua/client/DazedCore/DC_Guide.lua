@@ -1,4 +1,4 @@
---[[ Dazed Utilities: Core -- the in-game guide for the whole Dazed suite.
+--[[ Dazed Core -- the in-game guide for the whole Dazed suite.
 
      A window with one tab per Dazed mod that is loaded and a list of short pages in each, opened from a
      button at the foot of the vanilla sidebar. The text lives in the translation files
