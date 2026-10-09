@@ -59,7 +59,7 @@ its licence ships in those folders.
 
 ## Changes
 
-- **1.4.1.** Renamed to **Dazed Core** everywhere players see it: mod list, sandbox page, Mods options page, Error Magnifier report and the guide. The options page keeps its internal ID (`DazedUtilities`) so saved tick boxes carry over. Filled in `workshop.txt` with the Workshop description.
+- **1.4.1.** Renamed to **Dazed Core** everywhere players see it: mod list, sandbox page, Mods options page, Error Magnifier report and the guide. The options page keeps its internal ID (`DazedUtilities`) so saved tick boxes carry over. Filled in `workshop.txt` with the Workshop description. Guide text brought up to date: Power's first-system steps use the real menu names, the monitor page describes the charge board, rain is clean water, and the Dank pages use the grow room dashboard and vanilla sheets instead of blackout curtains.
 
 - **1.4.0.**
   - **Sync:** `S.versions[key]` and `S.versionOf(key)` count changes per tracked table (on touch and on a client's receive); `S.version` is unchanged.
