@@ -70,16 +70,20 @@ end
 
 ---------------------------------------------------------------- map buildings
 
---- The predefined room at a square, or nil. A user-defined room (a player's
---  building, turned into one on a client) is never a map room.
-function B.predefinedRoomAt(x, y, z)
-    local mg = metaGrid()
+-- The predefined room at a square on a metagrid the caller already holds, so a flood fetches it once.
+local function predefinedRoomIn(mg, x, y, z)
     if not mg then return nil end
     local rd = try(mg, "getRoomAt", x, y, z)
     if not rd or try(rd, "isUserDefined") then return nil end
     local def = try(rd, "getBuilding")
     if def and try(def, "isUserDefined") then return nil end
     return rd
+end
+
+--- The predefined room at a square, or nil. A user-defined room (a player's
+--  building, turned into one on a client) is never a map room.
+function B.predefinedRoomAt(x, y, z)
+    return predefinedRoomIn(metaGrid(), x, y, z)
 end
 
 function B.defAt(x, y, z)
@@ -310,7 +314,8 @@ end
 --    "open" the region is not enclosed, or not half roofed
 --    "big"  the structure is larger than R.MAX_STRUCTURE squares
 function B.structureAt(x, y, z)
-    if B.predefinedRoomAt(x, y, z) then return nil, "map" end
+    local mg = metaGrid()
+    if predefinedRoomIn(mg, x, y, z) then return nil, "map" end
     local first = regionAt(x, y, z)
     if not first then return nil, "none" end
     if not qualifies(first) then return nil, "open" end
@@ -336,7 +341,7 @@ function B.structureAt(x, y, z)
                         local flags = try(dc, "getSquare", lx, ly, cz) or 0
                         if flags > 0 and try(dc, "getIsoChunkRegion", lx, ly, cz) == cr then
                             local sx, sy = ox + lx, oy + ly
-                            if B.predefinedRoomAt(sx, sy, cz) then
+                            if predefinedRoomIn(mg, sx, sy, cz) then
                                 touchesMap = true
                             elseif R.fpAdd(fp, sx, sy, cz) then
                                 if fp.count > R.MAX_STRUCTURE then return nil, "big" end
