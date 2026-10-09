@@ -32,7 +32,8 @@ function N.on(module, command, fn, every)
     N.server[module][command] = { fn = fn, every = every }
 end
 
---- Register a client handler fn(args) for a message the authority sends with `reply`.
+--- Register a client handler fn(args, player) for a message the authority sends with `reply`.
+--  `player` is the one replied to in single player and split screen; over the network it is nil, so use getPlayer().
 function N.onClient(module, command, fn)
     if type(module) ~= "string" or type(command) ~= "string" or type(fn) ~= "function" then return end
     N.client[module] = N.client[module] or {}
@@ -65,13 +66,14 @@ function N.send(player, module, command, args)
 end
 
 --- Answer one player: a server command on a server, the client handler at once in single player.
+--  Off a server the handler also gets `player`, so split screen answers the right one.
 function N.reply(player, module, command, args)
     if onServer() then
         if sendServerCommand and player then pcall(sendServerCommand, player, module, command, args or {}) end
         return
     end
     local fn = N.client[module] and N.client[module][command]
-    if fn then pcall(fn, args or {}) end
+    if fn then pcall(fn, args or {}, player) end
 end
 
 --- Server-side check that a player stands within `max` tiles of x, y on the same floor.

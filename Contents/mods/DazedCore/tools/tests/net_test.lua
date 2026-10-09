@@ -67,6 +67,11 @@ check(out and out[2] == "done" and out[3] == 6, "server reply sends a command")
 isServer = nil
 for _, h in ipairs(Events.OnServerCommand.handlers) do h("DazedTest", "done", { n = 8 }) end
 check(shown == 8, "client receives a server command")
+local whom
+N.onClient("DazedTest", "who", function(a, p) whom = p end)
+local ch2 = E.character(3, 3, 0)
+N.reply(ch2, "DazedTest", "who", {})
+check(whom == ch2, "single player reply hands the handler its split-screen player")
 -- near
 check(N.near(ch, 11, 11, 0, 2) and not N.near(ch, 15, 10, 0, 2) and not N.near(ch, 10, 10, 1, 2), "near checks range and floor")
 
