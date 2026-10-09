@@ -20,6 +20,14 @@ local o = E.object("x_1", sq)
 check(U.try(o, "getSquare") == sq and U.try(o, "nope") == nil and U.try(nil, "x") == nil, "try")
 check(U.squareAt(1, 1, 0) == sq and U.squareAt(9, 9, 0) == nil, "squareAt")
 
+local asked = 0
+local look, forget = U.memo1(function(k) asked = asked + 1 if k == nil or k == "none" then return nil end return k .. "!" end, 2)
+check(look("a") == "a!" and look("a") == "a!" and asked == 1, "memo1 remembers an answer")
+check(look("none") == nil and look("none") == nil and asked == 2, "memo1 remembers a nil answer")
+look("b"); look("a")
+check(asked == 4, "memo1 starts over past its cap: " .. asked)
+forget(); look("a")
+check(asked == 5 and look(nil) == nil, "memo1 clear forgets; a nil argument is passed through")
 ------------------------------------------------------------------ Sync
 local S = require "DazedCore/DC_Sync"
 check(S.authority() == true, "single player is the authority")

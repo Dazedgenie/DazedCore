@@ -42,6 +42,29 @@ function U.propIs(obj, key)
     return false
 end
 
+--- Remember a one-argument lookup's answers by that argument (a sprite name, say), up to `max` (default 1024).
+--  Returns the remembering function and a clear(); a nil argument is never remembered. Only for answers that never change.
+function U.memo1(fn, max)
+    local NIL = {}
+    local cap = max or 1024
+    local memo, size = {}, 0
+    local function get(k)
+        if k == nil then return fn(k) end
+        local v = memo[k]
+        if v == nil then
+            v = fn(k)
+            if size >= cap then memo, size = {}, 0 end
+            if v == nil then memo[k] = NIL else memo[k] = v end
+            size = size + 1
+            return v
+        end
+        if v == NIL then return nil end
+        return v
+    end
+    local function clear() memo, size = {}, 0 end
+    return get, clear
+end
+
 --- Translated text with {1}, {2}... filled in. A % in a value is escaped for gsub.
 function U.txt(key, ...)
     local s = getText and getText(key) or nil

@@ -45,4 +45,20 @@ end
 --- Low, high and mean for the day `offset` days from today, or nil when no climate mod forecasts.
 function Cl.forecast(offset) return ask("forecast", offset or 0) end
 
+-- Share of normal food ageing by temperature: { °C, share }, straight lines between, flat past the ends.
+Cl.SPOIL_CURVE = { { -2, 0.05 }, { 0, 0.3 }, { 4, 0.3 }, { 10, 0.7 }, { 15, 1.0 } }
+
+--- How fast food spoils at `t` °C compared with a warm room (1). A mod may pass its own `curve` in the same shape.
+function Cl.spoilShare(t, curve)
+    local c = curve or Cl.SPOIL_CURVE
+    if t <= c[1][1] then return c[1][2] end
+    for i = 2, #c do
+        if t <= c[i][1] then
+            local a, b = c[i - 1], c[i]
+            return a[2] + (b[2] - a[2]) * (t - a[1]) / (b[1] - a[1])
+        end
+    end
+    return c[#c][2]
+end
+
 return Cl

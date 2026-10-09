@@ -19,5 +19,10 @@ check(Cl.temperatureAt("elsewhere") == 12, "a provider with no answer falls back
 check(Cl.forecast(1).d == 1, "forecasts pass the day through")
 Cl.register({ outdoor = function() error("boom") end })
 check(Cl.outdoor() == 12, "a provider that errors falls back to the game")
+-- the shared spoilage curve, matching Dazed Climate's cold storage
+check(Cl.spoilShare(-10) == 0.05 and Cl.spoilShare(2) == 0.3 and Cl.spoilShare(15) == 1.0 and Cl.spoilShare(40) == 1.0,
+      "spoilShare: flat past the ends and on the fridge plateau")
+check(math.abs(Cl.spoilShare(7) - 0.5) < 1e-9 and math.abs(Cl.spoilShare(-1) - 0.175) < 1e-9, "spoilShare: straight lines between points")
+check(Cl.spoilShare(30, { { 0, 0 }, { 20, 1 }, { 30, 1.6 } }) == 1.6, "spoilShare: a mod's own curve")
 print(string.format("climate_test: %d checks, %d failed", n, fails))
 os.exit(fails == 0 and 0 or 1)
