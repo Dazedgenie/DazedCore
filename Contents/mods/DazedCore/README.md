@@ -63,13 +63,16 @@ its licence ships in those folders.
   - **Sync:** `S.versions[key]` and `S.versionOf(key)` count changes per tracked table (on touch and on a client's receive); `S.version` is unchanged.
   - **Power:** a load may declare `prefix`, `matchName(spriteName)` and `byName = true` so `loadOf` skips or remembers `match` by sprite name; `W.clearNameMemo()`.
   - **Reach:** `R.ownerIn(shapes, list, i, x, y, z, inside)` for callers holding the chunk's list from `R.chunkIndex`.
-  - **Net:** client handlers get `(args, player)`; off a server `player` is the one replied to, for split screen.
+  - **Net:** client handlers get `(args, player)`, the local player replied to, on the direct and the networked path (split screen included; nil only when it cannot be told).
   - **Climate:** `Cl.spoilShare(t, curve)` and `Cl.SPOIL_CURVE`, the cold-storage spoilage curve in one place.
   - **Util:** `U.memo1(fn, max)` remembers a one-argument lookup (returns the function and a clear).
   - Performance: the heavy-parts sweep runs every ten game minutes (pick-up still splits at once); the Guide button
     no longer re-attaches every minute; the picker remembers targets and footprints per session and does nothing per
     frame while closed; `structureAt` fetches the metagrid once; `prop`/`propIs` build no tables.
   - Removed, unused by any Dazed mod: `R.chunkKey`, `R.shapeSquares`, `D.yieldedTo`, `B.enclosedAt`.
+  - **Fixes:**
+    - **Picker hover:** with the cursor still, the hover now follows a new served list at once (it compares the served version itself), and is looked at again every second (`K.HOVER_RECHECK_MS`) so a building another part takes turns red without moving the mouse. Test: `picker_test.lua`.
+    - **Net replies in split screen:** a server reply carries its target's online ID (`N.TO`, stripped before the handler runs), so the client hands the handler the right split-screen player instead of nil.
 - **1.3.0.**
   - **Detect:** `DazedCore.Detect` finds loaded mods (a leading backslash in B42 server lists is ignored) so a feature can yield to another mod that already does it.
   - **Net:** `DazedCore.Net` routes requests to the authority and answers back, with per-player rate limits and a `near` check for handlers. Test: `net_test.lua`.
