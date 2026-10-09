@@ -33,6 +33,13 @@ check(not S.dirty["DazedTestNet"], "flush clears dirty")
 -- a received copy on the authority is ignored
 for _, h in ipairs(Events.OnReceiveGlobalModData.handlers) do h("DazedTestNet", { x = 1 }) end
 check(ModData._t["DazedTestNet"] == nil, "authority ignores received tables")
+check(S.versionOf("DazedTestNet") == 1 and S.versionOf("Nope") == 0, "versionOf counts one key's changes")
+S.touch("DazedOther")
+check(S.versionOf("DazedTestNet") == 1 and S.versionOf("DazedOther") == 1, "touch bumps only its own key")
+isClient = function() return true end
+for _, h in ipairs(Events.OnReceiveGlobalModData.handlers) do h("DazedTestNet", { x = 2 }) end
+check(S.versionOf("DazedTestNet") == 2 and ModData._t["DazedTestNet"].x == 2, "client bumps the key's version on receive")
+isClient = nil
 
 ------------------------------------------------------------------ Note
 local N = require "DazedCore/DC_Note"

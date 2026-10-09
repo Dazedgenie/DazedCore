@@ -11,6 +11,7 @@ local S = DazedCore.Sync
 
 S.keys = S.keys or {}            -- tracked global ModData tags, in registration order
 S.version = S.version or 0
+S.versions = S.versions or {}    -- key -> its own change count, so a cache can watch one table
 S.dirty = S.dirty or {}
 
 --- A client of someone else's world. Single player and a server are not.
@@ -29,9 +30,13 @@ end
 --- Note that a synced table changed; the authority sends it at the next flush, or at once with `now`.
 function S.touch(key, now)
     S.version = S.version + 1
+    if key then S.versions[key] = (S.versions[key] or 0) + 1 end
     if S.authority() and key then S.dirty[key] = true end
     if now then S.flush() end
 end
+
+--- How many changes this side has seen to one tracked table; 0 before the first.
+function S.versionOf(key) return S.versions[key] or 0 end
 
 --- Send every changed table to the clients. Called once a minute.
 function S.flush()
@@ -53,6 +58,7 @@ local function receive(key, tbl)
         if k == key and tbl and ModData and ModData.add then
             ModData.add(key, tbl)
             S.version = S.version + 1
+            S.versions[key] = (S.versions[key] or 0) + 1
         end
     end
 end
