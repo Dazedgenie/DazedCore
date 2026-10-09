@@ -64,14 +64,34 @@ local out
 sendServerCommand = function(p, m, c, a) out = { m, c, a.n } end
 N.reply(ch, "DazedTest", "done", { n = 6 })
 check(out and out[2] == "done" and out[3] == 6, "server reply sends a command")
+local ch2 = E.character(3, 3, 0)
+function ch:getOnlineID() return 11 end
+function ch2:getOnlineID() return 12 end
+local sentArgs, mine = nil, { n = 1 }
+sendServerCommand = function(p, m, c, a) sentArgs = a end
+N.reply(ch2, "DazedTest", "who", mine)
+check(sentArgs and sentArgs[N.TO] == 12 and sentArgs.n == 1 and mine[N.TO] == nil, "a server reply names its target in a copy of the args")
 isServer = nil
 for _, h in ipairs(Events.OnServerCommand.handlers) do h("DazedTest", "done", { n = 8 }) end
 check(shown == 8, "client receives a server command")
-local whom
-N.onClient("DazedTest", "who", function(a, p) whom = p end)
-local ch2 = E.character(3, 3, 0)
+local whom, whomArgs
+N.onClient("DazedTest", "who", function(a, p) whom, whomArgs = p, a end)
 N.reply(ch2, "DazedTest", "who", {})
 check(whom == ch2, "single player reply hands the handler its split-screen player")
+-- the networked path: the client finds the local player the server named
+local locals = { [0] = ch, [1] = ch2 }
+local keepGSP = getSpecificPlayer
+getSpecificPlayer = function(i) return locals[i] end
+whom = false
+for _, h in ipairs(Events.OnServerCommand.handlers) do h("DazedTest", "who", sentArgs) end
+check(whom == ch2 and whomArgs[N.TO] == nil and whomArgs.n == 1, "a networked reply reaches the split-screen player it named")
+whom = false
+for _, h in ipairs(Events.OnServerCommand.handlers) do h("DazedTest", "who", { n = 2 }) end
+check(whom == nil, "with no target named the handler gets nil (and falls back to getPlayer)")
+whom = false
+for _, h in ipairs(Events.OnServerCommand.handlers) do h("DazedTest", "who", nil) end
+check(whom == nil and type(whomArgs) == "table", "nil args from the server arrive as an empty table")
+getSpecificPlayer = keepGSP
 -- near
 check(N.near(ch, 11, 11, 0, 2) and not N.near(ch, 15, 10, 0, 2) and not N.near(ch, 10, 10, 1, 2), "near checks range and floor")
 

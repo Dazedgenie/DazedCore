@@ -33,7 +33,7 @@ function N.on(module, command, fn, every)
 end
 
 --- Register a client handler fn(args, player) for a message the authority sends with `reply`.
---  `player` is the one replied to in single player and split screen; over the network it is nil, so use getPlayer().
+--  `player` is the local player replied to (split screen included); it is nil only when that cannot be told, so fall back to getPlayer().
 function N.onClient(module, command, fn)
     if type(module) ~= "string" or type(command) ~= "string" or type(fn) ~= "function" then return end
     N.client[module] = N.client[module] or {}
@@ -65,11 +65,29 @@ function N.send(player, module, command, args)
     return dispatch(module, command, player, args)
 end
 
+-- The field a networked reply carries its target's online ID in. OnServerCommand gives the client no player,
+-- and split-screen players share one connection, so this is how the client tells which of them it was for.
+N.TO = "_dcTo"
+
+--- The local player with this online ID, or nil.
+local function localPlayerFor(id)
+    if id == nil or not getSpecificPlayer then return nil end
+    for i = 0, 3 do
+        local p = getSpecificPlayer(i)
+        if p and U.try(p, "getOnlineID") == id then return p end
+    end
+    return nil
+end
+
 --- Answer one player: a server command on a server, the client handler at once in single player.
---  Off a server the handler also gets `player`, so split screen answers the right one.
+--  Either way the handler gets the player replied to, so split screen answers the right one.
 function N.reply(player, module, command, args)
     if onServer() then
-        if sendServerCommand and player then pcall(sendServerCommand, player, module, command, args or {}) end
+        if not (sendServerCommand and player) then return end
+        local out = {}                                   -- a copy, so the caller's table is never changed
+        for k, v in pairs(type(args) == "table" and args or {}) do out[k] = v end
+        out[N.TO] = U.try(player, "getOnlineID")
+        pcall(sendServerCommand, player, module, command, out)
         return
     end
     local fn = N.client[module] and N.client[module][command]
@@ -96,7 +114,11 @@ if Events and not N.hooked then
     if Events.OnServerCommand then
         Events.OnServerCommand.Add(function(module, command, args)
             local fn = N.client[module] and N.client[module][command]
-            if fn then pcall(fn, args or {}) end
+            if not fn then return end
+            args = type(args) == "table" and args or {}
+            local to = args[N.TO]
+            args[N.TO] = nil
+            pcall(fn, args, localPlayerFor(to))
         end)
     end
 end
