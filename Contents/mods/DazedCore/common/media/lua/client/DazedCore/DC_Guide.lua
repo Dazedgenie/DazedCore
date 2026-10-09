@@ -230,10 +230,11 @@ local function patch()
     end
 end
 
+-- No minute re-check: the button is unconditional, the initialise patch covers every rebuilt sidebar, OnCreatePlayer
+-- covers the first one and split-screen rebuilds, and the option applies itself through its callback.
 if Events then
     Events.OnGameStart.Add(patch)
     Events.OnCreatePlayer.Add(current)
-    Events.EveryOneMinute.Add(current)
 end
 
 return G
