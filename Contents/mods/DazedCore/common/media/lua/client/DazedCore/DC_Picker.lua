@@ -91,7 +91,6 @@ local function served(st)
         t.floors = z0 and (z1 - z0 + 1) or 0
     end
     st.cacheVer, st.cacheList = ver, list
-    st.hoverKey, st.hover = nil, nil
     return list
 end
 K.served = served
@@ -134,19 +133,28 @@ local function footprintOf(st, t)
     return m or nil
 end
 
---- The target under the cursor, resolved only when the square changes.
+-- How often a still cursor's hover is looked at again, for status changes the served version does not cover.
+K.HOVER_RECHECK_MS = 1000
+local function clockMs()
+    return getTimestampMs and getTimestampMs() or 0
+end
+
+--- The target under the cursor, resolved when the square changes, the served list changes, or the recheck is due.
 local function hover(st, pn, z)
     local sx, sy = K.mouseSquare(pn, z)
     if not sx then
         st.hover, st.hoverKey = nil, nil
         return
     end
+    local list = served(st)                          -- first, so a new served list is seen with the cursor still
+    local now = clockMs()
+    local fresh = st.hoverVer == st.cacheVer and now - (st.hoverAt or now) < K.HOVER_RECHECK_MS
     -- Compared as numbers: this runs every frame, and a key string would be built every frame to say "same square".
-    if st.hoverKey and st.hx == sx and st.hy == sy and st.hz == z then return end
+    if fresh and st.hoverKey and st.hx == sx and st.hy == sy and st.hz == z then return end
     st.hoverKey, st.hx, st.hy, st.hz = true, sx, sy, z
-    if st.hover and st.hover.fp and R.fpHas(st.hover.fp, sx, sy, z) then return end
+    if fresh and st.hover and st.hover.fp and R.fpHas(st.hover.fp, sx, sy, z) then return end
+    st.hoverVer, st.hoverAt = st.cacheVer, now
     st.hover = nil
-    local list = served(st)
     for n = 1, #list do
         local w = list[n]
         if R.fpHas(w.fp, sx, sy, z) then
@@ -351,7 +359,7 @@ function K.onMouseDown()
             local sx, sy = K.mouseSquare(pn, z)
             if sx and not refused(st) then
                 st.spec.pick(st, sx, sy, z)
-                st.hoverKey = nil
+                st.hoverKey, st.hoverVer = nil, nil
             end
         end
     end
