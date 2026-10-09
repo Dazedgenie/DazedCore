@@ -61,10 +61,6 @@ function R.chunkOf(x, y)
     return floor(x / 8), floor(y / 8)
 end
 
-function R.chunkKey(kx, ky)
-    return kx .. "," .. ky
-end
-
 function R.sqKey(x, y)
     return x * SQ + y
 end
@@ -578,16 +574,6 @@ function R.rowSpan(s, y)
     return xa, xb
 end
 
---- How many squares a shape holds, over all its levels.
-function R.shapeSquares(s)
-    local n = 0
-    for y = s.y0, s.y1 do
-        local xa, xb = R.rowSpan(s, y)
-        if xa then n = n + (xb - xa + 1) end
-    end
-    return n * (s.zhi - s.zlo + 1)
-end
-
 --- The chunks a shape can light: every chunk a circle registers on, or a
 --  relay's own chunk.
 function R.chunksOf(s)
@@ -617,7 +603,13 @@ end
 --  it for billing, and to nothing after it.
 function R.owner(shapes, ix, i, x, y, z)
     if not R.contains(shapes[i], x, y, z) then return false end
-    local list = ix[floor(x / 8) .. "," .. floor(y / 8)]
+    return R.ownerIn(shapes, ix[floor(x / 8) .. "," .. floor(y / 8)], i, x, y, z, true)
+end
+
+--- R.owner for a caller that already holds the chunk's list from R.chunkIndex (nil when none).
+--  `inside` true skips the check that shape i contains the square, when the caller already knows.
+function R.ownerIn(shapes, list, i, x, y, z, inside)
+    if not inside and not R.contains(shapes[i], x, y, z) then return false end
     if not list then return true end
     for n = 1, #list do
         local j = list[n]

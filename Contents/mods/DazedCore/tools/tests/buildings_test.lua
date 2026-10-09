@@ -69,6 +69,14 @@ check(R.fpCount(back) == 5 and R.fpHas(back, 5, 5, 1), "rects round-trip through
 local x0, y0, x1, y1, z0, z1 = R.fpBounds(fp)
 check(x0 == 1 and y0 == 1 and x1 == 5 and y1 == 5 and z0 == 0 and z1 == 1, "fpBounds")
 
+-- billing owners: the first shape holding a square owns it
+local shapes = { R.circleShape(4, 4, 0, 3, 1), R.circleShape(6, 4, 0, 3, 1) }
+local ix = R.chunkIndex(shapes)
+check(R.owner(shapes, ix, 1, 5, 4, 0) and not R.owner(shapes, ix, 2, 5, 4, 0) and R.owner(shapes, ix, 2, 8, 4, 0), "owner")
+local cl = ix["0,0"]
+check(R.ownerIn(shapes, cl, 1, 5, 4, 0) and not R.ownerIn(shapes, cl, 2, 5, 4, 0) and R.ownerIn(shapes, cl, 2, 8, 4, 0)
+      and not R.ownerIn(shapes, cl, 1, 9, 4, 0) and R.ownerIn(shapes, nil, 2, 5, 4, 0), "ownerIn matches owner with the chunk list in hand")
+
 -- map buildings
 local t = B.targetAt(15, 12, 0)
 check(t and t.k == "b" and t.def == house, "click in a room picks the house")
@@ -92,6 +100,47 @@ check(#list == 2 and list[1].k == "b" and list[1].id == t.id and list[2].k == "s
 local rt = B.resolve("b", t.x, t.y, t.z)
 check(rt and rt.id == t.id, "resolve a stored building target")
 check(B.enclosedAt(15, 15, 0) and not B.enclosedAt(40, 40, 0), "enclosedAt")
+
+-- player-built structures, against stand-in region data: A (x 20..22, y 10..12) next to B (x 24..26), D above A,
+-- O an open lean-to beside B, and M a region that runs into the house's rooms.
+local regions, owners = {}, {}
+local function Region(name, enclosed, roofed)
+    local r = { name = name, crs = {}, nbs = {} }
+    r.isEnclosed = function() return enclosed end
+    r.getRoofedPercentage = function() return roofed end
+    r.getDebugIsoChunkRegionCopy = function() return List(r.crs) end
+    r.getNeighbors = function() return List(r.nbs) end
+    regions[#regions + 1] = r
+    return r
+end
+local function claim(r, x0, y0, x1, y1, z)
+    local cr = { z = z }
+    cr.getzLayer = function() return z end
+    cr.getDataChunk = function()
+        local kx, ky = math.floor(x0 / 8), math.floor(y0 / 8)
+        return { getChunkX = function() return kx end, getChunkY = function() return ky end,
+                 getSquare = function(_, lx, ly, lz) return owners[(kx * 8 + lx) .. "," .. (ky * 8 + ly) .. "," .. lz] and 1 or 0 end,
+                 getIsoChunkRegion = function(_, lx, ly, lz) local o = owners[(kx * 8 + lx) .. "," .. (ky * 8 + ly) .. "," .. lz] return o and o.cr end }
+    end
+    r.crs[#r.crs + 1] = cr
+    for x = x0, x1 do for y = y0, y1 do owners[x .. "," .. y .. "," .. z] = { r = r, cr = cr } end end
+end
+local A, Bq, D, O, M = Region("A", true, 1), Region("B", true, 0.6), Region("D", true, 1), Region("O", true, 0.2), Region("M", true, 1)
+claim(A, 20, 10, 22, 12, 0); claim(Bq, 24, 10, 26, 12, 0); claim(D, 21, 11, 21, 11, 1); claim(O, 24, 13, 26, 13, 0)
+claim(M, 18, 2, 21, 3, 0); claim(M, 18, 1, 19, 1, 0)
+A.nbs = { Bq }; Bq.nbs = { A, O }; O.nbs = { Bq }
+IsoRegions = { getIsoWorldRegion = function(x, y, z) local o = owners[x .. "," .. y .. "," .. z] return o and o.r end }
+local sf = B.structureAt(21, 11, 0)
+check(sf and R.fpCount(sf) == 19 and R.fpHas(sf, 25, 12, 0) and R.fpHas(sf, 21, 11, 1) and not R.fpHas(sf, 25, 13, 0),
+      "structure: two rooms and the floor above, not the open lean-to: " .. tostring(sf and R.fpCount(sf)))
+local _, why1 = B.structureAt(15, 15, 0)
+local _, why2 = B.structureAt(25, 13, 0)
+local _, why3 = B.structureAt(40, 40, 0)
+check(why1 == "map" and why2 == "open" and why3 == "none", "structure: map, open and none answers")
+house.rooms[#house.rooms + 1] = Room(0, { Rect(18, 1, 2, 1) }, house)
+local mf = B.structureAt(20, 2, 0)
+check(mf and R.fpCount(mf) == 8 and not R.fpHas(mf, 18, 1, 0), "structure: map-room squares left out")
+IsoRegions = nil
 
 print(string.format("buildings_test: %d checks, %d failed", checks, fails))
 os.exit(fails == 0 and 0 or 1)
