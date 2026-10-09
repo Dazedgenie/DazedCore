@@ -43,6 +43,7 @@ local TAKE  = { 0.35, 0.60, 0.95 }
 local FAR   = { 0.90, 0.30, 0.25 }
 
 local states = {}          -- player number -> picker state
+local openCount = 0        -- how many pickers are open, so the per-frame hooks can leave at once
 
 --[[ THE SPEC. Every field but `served` and `pick` is optional.
        range(st)            -> r, v     reach in squares and floors (default 20, 3)
@@ -105,6 +106,34 @@ function K.mouseSquare(pn, z)
     return floor(wx), floor(wy)
 end
 
+-- Session memo of B.targetAt by square; false stands for "nothing here". Dropped when the picker closes.
+local function targetAt(st, x, y, z)
+    local byZ = st.targets[z]
+    if not byZ then
+        byZ = {}
+        st.targets[z] = byZ
+    end
+    local k = R.sqKey(x, y)
+    local t = byZ[k]
+    if t == nil then
+        t = B.targetAt(x, y, z) or false
+        byZ[k] = t
+    end
+    return t or nil
+end
+
+-- Session memo of a target's footprint and its rects, keyed by kind and id, so re-hovering a building reuses both.
+local function footprintOf(st, t)
+    local k = t.k .. ":" .. tostring(t.id)
+    local m = st.footprints[k]
+    if m == nil then
+        local fp = B.footprintOf(t)
+        m = fp and { fp = fp, rects = R.rectsOf(fp) } or false
+        st.footprints[k] = m
+    end
+    return m or nil
+end
+
 --- The target under the cursor, resolved only when the square changes.
 local function hover(st, pn, z)
     local sx, sy = K.mouseSquare(pn, z)
@@ -125,7 +154,7 @@ local function hover(st, pn, z)
             return
         end
     end
-    local t = B.targetAt(sx, sy, z)
+    local t = targetAt(st, sx, sy, z)
     if not t then return end
     for n = 1, #list do
         if list[n].k == "b" and t.k == "b" and list[n].id == t.id then
@@ -133,14 +162,15 @@ local function hover(st, pn, z)
             return
         end
     end
-    local fp = B.footprintOf(t)
-    if not fp then return end
+    local m = footprintOf(st, t)
+    if not m then return end
+    local fp = m.fp
     local mode = st.spec.status and st.spec.status(st, t, fp) or nil
     if mode ~= "wired" and mode ~= "taken" then
         local r, v = range(st)
         mode = B.reaches(fp, st.x, st.y, st.z, r, v) and "add" or "far"
     end
-    st.hover = { rects = R.rectsOf(fp), fp = fp, mode = mode }
+    st.hover = { rects = m.rects, fp = fp, mode = mode }
 end
 
 ----------------------------------------------------------------- the overlay
@@ -248,9 +278,9 @@ end
 local function reachEdge(st, z)
     local r, v = range(st)
     if z < st.z - v or z > st.z + v then return end
-    local k = r .. ":" .. z
-    if st.edgeKey ~= k then
-        st.edgeKey = k
+    -- The ring depends only on the reach, so a number compare replaces a per-frame key string.
+    if st.edgeR ~= r then
+        st.edgeR = r
         local edges = {}
         local function inside(x, y)
             local dx, dy = x - st.x, y - st.y
@@ -288,6 +318,7 @@ local function stillValid(st, player)
 end
 
 function K.render()
+    if openCount == 0 then return end
     local viewport = IsoPlayer.getPlayerIndex()
     for pn, st in pairs(states) do
         local player = getSpecificPlayer(pn)
@@ -312,6 +343,7 @@ end
 ------------------------------------------------------------------- clicks
 
 function K.onMouseDown()
+    if openCount == 0 then return end
     for pn, st in pairs(states) do
         local player = getSpecificPlayer(pn)
         if player and stillValid(st, player) then
@@ -326,6 +358,7 @@ function K.onMouseDown()
 end
 
 function K.onUI()
+    if openCount == 0 then return end
     if isKeyDown and isKeyDown(Keyboard.KEY_ESCAPE) then K.closeAll() end
 end
 
@@ -448,6 +481,8 @@ function K.close(pn)
     local st = states[pn]
     if not st then return end
     states[pn] = nil
+    openCount = math.max(0, openCount - 1)
+    st.targets, st.footprints = {}, {}
     if st.window then st.window:removeFromUIManager() end
 end
 
@@ -463,8 +498,9 @@ function K.open(playerObj, part, spec)
     local pn = playerObj:getPlayerNum()
     K.close(pn)
     local st = { part = part, spec = spec, x = sq:getX(), y = sq:getY(), z = sq:getZ(),
-                 player = playerObj, pn = pn }
+                 player = playerObj, pn = pn, targets = {}, footprints = {} }
     states[pn] = st
+    openCount = openCount + 1
     local win = DC_PickerWindow:new(st)
     win:initialise()
     win:addToUIManager()
