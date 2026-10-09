@@ -39,8 +39,8 @@ targets with `DazedCore.Buildings.decodeTargets` and `DazedCore.Reach.decodeRect
 
 ## Tests
 
-`tools/tests/run_all.sh` runs the headless checks with any Lua 5.3+ on PATH as `lua`
-(`luatex --luaonly` works too). `engine_stub.lua` is the shared stand-in for the game engine; the other
+`lua run_all.lua` in `tools/tests` runs the headless checks with any Lua 5.3+ on PATH as `lua`
+(set `LUA="luatex --luaonly"` to use that instead). `engine_stub.lua` is the shared stand-in for the game engine; the other
 Dazed mods' tests use it as well.
 
 ## Tools
@@ -59,7 +59,7 @@ its licence ships in those folders.
 
 ## Changes
 
-- **1.4.1.** Renamed to **Dazed Core** everywhere players see it: mod list, sandbox page, Mods options page, Error Magnifier report and the guide. The options page keeps its internal ID (`DazedUtilities`) so saved tick boxes carry over. Filled in `workshop.txt` with the Workshop description. Guide text brought up to date: Power's first-system steps use the real menu names, the monitor page describes the charge board, rain is clean water, and the Dank pages use the grow room dashboard and vanilla sheets instead of blackout curtains.
+- **1.4.1.** Renamed to **Dazed Core** everywhere players see it: mod list, sandbox page, Mods options page, Error Magnifier report and the guide. The options page keeps its internal ID (`DazedUtilities`) so saved tick boxes carry over. Filled in `workshop.txt` with the Workshop description. The test runner is now `tools/tests/run_all.lua` (was `run_all.sh`) because the Steam Workshop refuses `.sh` files in an upload. Guide text brought up to date: Power's first-system steps use the real menu names, the monitor page describes the charge board, rain is clean water, and the Dank pages use the grow room dashboard and vanilla sheets instead of blackout curtains.
 
 - **1.4.0.**
   - **Sync:** `S.versions[key]` and `S.versionOf(key)` count changes per tracked table (on touch and on a client's receive); `S.version` is unchanged.
