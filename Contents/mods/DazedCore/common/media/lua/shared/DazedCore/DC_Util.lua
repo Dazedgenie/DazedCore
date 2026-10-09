@@ -18,28 +18,35 @@ function U.try(obj, method, ...)
 end
 local try = U.try
 
+-- A property holder's value for key, or nil.
+local function holderVal(holder, key)
+    if not holder then return nil end
+    local v = try(holder, "get", key)
+    if v == nil then v = try(holder, "Val", key) end
+    return v
+end
+
 --- A tile property's value from the object or its sprite, or nil.
 function U.prop(obj, key)
-    for _, holder in ipairs({ try(obj, "getProperties"), try(try(obj, "getSprite"), "getProperties") }) do
-        if holder then
-            local v = try(holder, "get", key)
-            if v == nil then v = try(holder, "Val", key) end
-            if v ~= nil then return v end
-        end
-    end
-    return nil
+    local own = try(obj, "getProperties")
+    if not own then return nil end         -- as before: the sprite is asked only when the object has properties
+    local v = holderVal(own, key)
+    if v ~= nil then return v end
+    return holderVal(try(try(obj, "getSprite"), "getProperties"), key)
+end
+
+-- Does a property holder carry the flag under any of the engine's three method names?
+local function holderIs(holder, key)
+    if not holder then return false end
+    return try(holder, "has", key) == true or try(holder, "Is", key) == true or try(holder, "is", key) == true
 end
 
 --- Does the object or its sprite carry a tile flag?
 function U.propIs(obj, key)
-    for _, holder in ipairs({ try(obj, "getProperties"), try(try(obj, "getSprite"), "getProperties") }) do
-        if holder then
-            for _, m in ipairs({ "has", "Is", "is" }) do
-                if try(holder, m, key) == true then return true end
-            end
-        end
-    end
-    return false
+    local own = try(obj, "getProperties")
+    if not own then return false end       -- as before: the sprite is asked only when the object has properties
+    if holderIs(own, key) then return true end
+    return holderIs(try(try(obj, "getSprite"), "getProperties"), key)
 end
 
 --- Remember a one-argument lookup's answers by that argument (a sprite name, say), up to `max` (default 1024).

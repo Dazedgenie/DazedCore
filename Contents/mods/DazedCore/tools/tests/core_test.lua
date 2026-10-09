@@ -20,6 +20,13 @@ local o = E.object("x_1", sq)
 check(U.try(o, "getSquare") == sq and U.try(o, "nope") == nil and U.try(nil, "x") == nil, "try")
 check(U.squareAt(1, 1, 0) == sq and U.squareAt(9, 9, 0) == nil, "squareAt")
 
+-- tile properties: the object's own first, then its sprite's; flags under has, Is or is
+local function Props(vals, flags, via) return { get = via == "get" and function(_, k) return vals[k] end or nil,
+    Val = via ~= "get" and function(_, k) return vals[k] end or nil, Is = function(_, k) return flags[k] == true end } end
+local po = { getProperties = function() return Props({ A = "own" }, { F = true }, "get") end,
+             getSprite = function() return { getProperties = function() return Props({ A = "spr", B = "spr" }, { G = true }, "Val") end } end }
+check(U.prop(po, "A") == "own" and U.prop(po, "B") == "spr" and U.prop(po, "C") == nil and U.prop(nil, "A") == nil, "prop: own, then sprite")
+check(U.propIs(po, "F") and U.propIs(po, "G") and not U.propIs(po, "H") and not U.propIs(nil, "F"), "propIs: own, then sprite")
 local asked = 0
 local look, forget = U.memo1(function(k) asked = asked + 1 if k == nil or k == "none" then return nil end return k .. "!" end, 2)
 check(look("a") == "a!" and look("a") == "a!" and asked == 1, "memo1 remembers an answer")
