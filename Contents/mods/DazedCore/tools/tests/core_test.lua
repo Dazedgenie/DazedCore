@@ -82,6 +82,21 @@ working = true
 check(W.draw(pump) == 400, "working load draws its rating")
 W.legacyHook = function(obj) return obj == lamp end
 check(W.wired(lamp), "an older add-on's hook still counts")
+-- name hints: prefix and matchName skip match, byName remembers the verdict per sprite name
+local calls = 0
+W.registerLoad({ id = "heater", kind = "heater", prefix = "heat_", matchName = function(n) return n ~= "heat_cold" end, byName = true,
+                 match = function(obj) calls = calls + 1 return obj.sprite == "heat_1" end,
+                 watts = function() return 50 end, working = function() return true end })
+local h1 = E.object("heat_1", E.square(4, 4, 0))
+local h1b = E.object("heat_1", E.square(5, 4, 0))
+local hc = E.object("heat_cold", E.square(6, 4, 0))
+check(W.loadOf(h1) and W.loadOf(h1).id == "heater" and calls == 1, "byName load matched once: " .. calls)
+check(W.loadOf(h1b) == W.loadOf(h1) and calls == 1, "same sprite name answered from the memo")
+check(W.loadOf(lamp) == nil and W.loadOf(hc) == nil and calls == 1, "prefix and matchName skip match")
+check(W.loadOf(pump).id == "testpump", "loads without hints still match as before")
+W.clearNameMemo()
+W.loadOf(h1)
+check(calls == 2, "clearNameMemo forgets verdicts")
 
 ------------------------------------------------------------------ Migrate
 local M = require "DazedCore/DC_Migrate"
