@@ -3,24 +3,24 @@
 Shared library for the Dazed Utilities mods for Project Zomboid Build 42. It does nothing on its own.
 **Required by** *Dazed Utilities: Plumbing* 0.10 and later and *Dazed Utilities: Power*.
 
-- **Mod ID:** `DazedCore` · **Version:** 1.3.0 · **Game:** Build 42 · **Load order:** before any other Dazed mod (`require=DazedCore` in theirs)
+- **Mod ID:** `DazedCore` · **Version:** 1.4.0 · **Game:** Build 42 · **Load order:** before any other Dazed mod (`require=DazedCore` in theirs)
 
 ## What it holds
 
 | Module | Namespace | For |
 |---|---|---|
 | `DC_HeavyParts` | `DazedCore.Heavy` (also the global `DazedHeavy`, version 2) | Anything over 30 kg is carried as parts, "(1/2)" and "(2/2)", like a bed or shelving; placing needs every part. A mod registers the item prefixes it owns. Upgrades an older version-1 copy left by Plumbing 0.9 / Dazed Power 0.9 in place. |
-| `DC_Power` | `DazedCore.Power` | The registry the mods talk through. A power mod registers a **provider** (`isPowered(obj)`); a mod with a machine that needs power registers a **load** (`match`, `watts`, `working`). `isPowered(obj)` answers for any object: wired, or a powered square. |
+| `DC_Power` | `DazedCore.Power` | The registry the mods talk through. A power mod registers a **provider** (`isPowered(obj)`); a mod with a machine that needs power registers a **load** (`match`, `watts`, `working`; optional `prefix`, `matchName`, `byName` let `loadOf` skip or remember `match` by sprite name). `isPowered(obj)` answers for any object: wired, or a powered square. |
 | `DC_Buildings`, `DC_Reach` | `DazedCore.Buildings`, `DazedCore.Reach` | Which squares a building is: map houses with their basements and wall shell, and player-built structures read from region data so a dedicated server agrees with its clients. Footprints, rects and their string codecs. |
 | `DC_Picker` (client) | `DazedCore.Picker` | The Building Picker window and overlay. A mod opens it with a *spec* saying what its part serves, how far it reaches and what to send on a click. |
-| `DC_Sync` | `DazedCore.Sync` | Who is the authority, tracked global ModData tables sent to clients, a `version` counter for caches. |
+| `DC_Sync` | `DazedCore.Sync` | Who is the authority, tracked global ModData tables sent to clients, a `version` counter for caches and `versionOf(key)` per table. |
 | `DC_Note` (+ `DC_NoteClient`) | `DazedCore.Note` | A line above a player's head; on a server the translation key travels and the client shows it. `limited` for refusals the cursor asks every frame. |
 | `DC_Migrate` | `DazedCore.Migrate` | Schema versions on saved ModData, so a later release can change what it stores. |
 | `DC_Detect` | `DazedCore.Detect` | Which mods are loaded. A feature registers the mod IDs that already do it (`yieldTo`); `yields(feature)` says whether to step aside, logged once. |
 | `DC_Net` | `DazedCore.Net` | Client asks, authority acts: `on(module, command, fn, every)` server handlers with a per-player rate limit, `send` (runs at once in single player), `reply`/`onClient` for answers, `near` range check. |
 | `DC_Options` (client) | `DazedCore.Options` | One "Dazed Utilities" page in the Mods options tab that every mod adds its tick boxes to. |
 | `DC_Report` (client) | `DazedCore.Report` | One Error Magnifier report with a section per mod. |
-| `DC_Util` | `DazedCore.Util` | `try`, tile `prop`/`propIs`, translated `txt`/`count`, `haloNote`, `worldHours`, `squareAt`. |
+| `DC_Util` | `DazedCore.Util` | `try`, tile `prop`/`propIs`, `memo1` for one-argument lookups, translated `txt`/`count`, `haloNote`, `worldHours`, `squareAt`. |
 | `DC_Boot` | `DazedCore.Boot` | Loads the shared modules and prints `DazedCore: ready -- ...` with the mods that registered. |
 
 ## Using it from a mod
@@ -59,6 +59,17 @@ its licence ships in those folders.
 
 ## Changes
 
+- **1.4.0.**
+  - **Sync:** `S.versions[key]` and `S.versionOf(key)` count changes per tracked table (on touch and on a client's receive); `S.version` is unchanged.
+  - **Power:** a load may declare `prefix`, `matchName(spriteName)` and `byName = true` so `loadOf` skips or remembers `match` by sprite name; `W.clearNameMemo()`.
+  - **Reach:** `R.ownerIn(shapes, list, i, x, y, z, inside)` for callers holding the chunk's list from `R.chunkIndex`.
+  - **Net:** client handlers get `(args, player)`; off a server `player` is the one replied to, for split screen.
+  - **Climate:** `Cl.spoilShare(t, curve)` and `Cl.SPOIL_CURVE`, the cold-storage spoilage curve in one place.
+  - **Util:** `U.memo1(fn, max)` remembers a one-argument lookup (returns the function and a clear).
+  - Performance: the heavy-parts sweep runs every ten game minutes (pick-up still splits at once); the Guide button
+    no longer re-attaches every minute; the picker remembers targets and footprints per session and does nothing per
+    frame while closed; `structureAt` fetches the metagrid once; `prop`/`propIs` build no tables.
+  - Removed, unused by any Dazed mod: `R.chunkKey`, `R.shapeSquares`, `D.yieldedTo`, `B.enclosedAt`.
 - **1.3.0.**
   - **Detect:** `DazedCore.Detect` finds loaded mods (a leading backslash in B42 server lists is ignored) so a feature can yield to another mod that already does it.
   - **Net:** `DazedCore.Net` routes requests to the authority and answers back, with per-player rate limits and a `near` check for handlers. Test: `net_test.lua`.

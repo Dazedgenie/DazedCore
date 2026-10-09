@@ -1,5 +1,5 @@
 --[[ Dazed Utilities: Core -- loads every shared module and prints one line so a console log
-     shows the library arrived: DazedCore: ready -- 1.3.0, heavy parts v2, 0 power providers, 0 loads. ]]
+     shows the library arrived: DazedCore: ready -- 1.4.0, heavy parts v2, 0 power providers, 0 loads. ]]
 
 require "DazedCore/DC_Util"
 require "DazedCore/DC_Preset"
