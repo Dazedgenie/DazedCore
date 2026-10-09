@@ -56,12 +56,6 @@ function D.yields(feature)
     return hit ~= nil
 end
 
---- The mod a feature yielded to, for reports; nil when it did not yield.
-function D.yieldedTo(feature)
-    if not D.yields(feature) then return nil end
-    return D.cache[feature]
-end
-
 --- Forget cached answers; tests and a mod list change use it.
 function D.reset()
     active = nil

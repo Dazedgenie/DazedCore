@@ -99,7 +99,7 @@ local list = B.decodeTargets(B.encodeTargets({ t, { k = "s", x = 1, y = 2, z = 0
 check(#list == 2 and list[1].k == "b" and list[1].id == t.id and list[2].k == "s" and list[2].id == "1,2,0:9", "targets codec")
 local rt = B.resolve("b", t.x, t.y, t.z)
 check(rt and rt.id == t.id, "resolve a stored building target")
-check(B.enclosedAt(15, 15, 0) and not B.enclosedAt(40, 40, 0), "enclosedAt")
+check(B.predefinedRoomAt(15, 15, 0) and not B.predefinedRoomAt(40, 40, 0), "predefinedRoomAt")
 
 -- player-built structures, against stand-in region data: A (x 20..22, y 10..12) next to B (x 24..26), D above A,
 -- O an open lean-to beside B, and M a region that runs into the house's rooms.

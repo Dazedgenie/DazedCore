@@ -16,8 +16,8 @@ local D = require "DazedCore/DC_Detect"
 check(D.isActive("DazedCore") and D.isActive("BB_CommonSense") and not D.isActive("Nope"), "isActive strips a leading backslash")
 D.yieldTo("Test.Pry", { "BB_BreakingIn", "BB_CommonSense" })
 D.yieldTo("Test.Prox", { "ProximityInventory" })
-check(D.yields("Test.Pry") and D.yieldedTo("Test.Pry") == "BB_CommonSense", "yields to the first active mod")
-check(not D.yields("Test.Prox") and D.yieldedTo("Test.Prox") == nil, "no overlap, no yield")
+check(D.yields("Test.Pry") and D.cache["Test.Pry"] == "BB_CommonSense", "yields to the first active mod")
+check(not D.yields("Test.Prox") and D.cache["Test.Prox"] == false, "no overlap, no yield")
 check(not D.yields("Test.Unregistered"), "an unregistered feature never yields")
 mods[#mods + 1] = "ProximityInventory"
 check(not D.yields("Test.Prox"), "answer is cached until reset")
