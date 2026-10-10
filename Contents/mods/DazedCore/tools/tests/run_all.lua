@@ -8,5 +8,5 @@ local function run(script)
     if r1 ~= true and r1 ~= 0 then ok = false end
 end
 run("syntax_check.lua")
-for _, t in ipairs({ "heavy", "core", "buildings", "preset", "climate", "net", "picker" }) do run(t .. "_test.lua") end
+for _, t in ipairs({ "heavy", "core", "buildings", "preset", "climate", "net", "picker", "debugspawn" }) do run(t .. "_test.lua") end
 os.exit(ok and 0 or 1)

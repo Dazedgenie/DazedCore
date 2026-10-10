@@ -13,6 +13,7 @@ require "DazedCore/DC_Buildings"
 require "DazedCore/DC_Climate"
 require "DazedCore/DC_Detect"
 require "DazedCore/DC_Net"
+require "DazedCore/DC_DebugSpawn"
 
 DazedCore.Boot = DazedCore.Boot or {}
 local B = DazedCore.Boot

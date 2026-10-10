@@ -93,5 +93,8 @@
     "IGUI_DazedGuide_DankSmoking_Text": "Roll Joint with rolling papers, or Smoke in Pipe with a pipe and a lighter. A pipe hit is stronger and builds tolerance faster. <LINE> <LINE> Indica relaxes and makes you hungry and tired. Sativa lifts boredom and mood. Hybrid sits between. <LINE> <LINE> Tolerance makes each dose weaker and fades over weeks off. Regular use builds dependency, and a dependent player goes into withdrawal after about a day without.",
     "IGUI_DazedGuide_Book_butchery": "Butchery",
     "IGUI_DazedGuide_Book_cooking": "Cooking",
-    "IGUI_DazedGuide_Book_dank": "Dank"
+    "IGUI_DazedGuide_Book_dank": "Dank",
+    "IGUI_DazedCore_Debug": "Dazed debug",
+    "IGUI_DazedCore_DebugSpawn": "Spawn all {1} items around me",
+    "IGUI_DazedCore_DebugSpawned": "Placed {1} {2} items; {3} more went into your inventory"
 }

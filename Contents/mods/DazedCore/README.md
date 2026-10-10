@@ -3,7 +3,7 @@
 Shared library for the Dazed mods for Project Zomboid Build 42. It does nothing on its own.
 **Required by** *Dazed Plumbing* 0.10 and later and *Dazed Power*.
 
-- **Mod ID:** `DazedCore` · **Version:** 1.4.1 · **Game:** Build 42 · **Load order:** before any other Dazed mod (`require=DazedCore` in theirs)
+- **Mod ID:** `DazedCore` · **Version:** 1.5.0 · **Game:** Build 42 · **Load order:** before any other Dazed mod (`require=DazedCore` in theirs)
 
 ## What it holds
 
@@ -21,6 +21,7 @@ Shared library for the Dazed mods for Project Zomboid Build 42. It does nothing 
 | `DC_Options` (client) | `DazedCore.Options` | One "Dazed Core" page in the Mods options tab that every mod adds its tick boxes to. |
 | `DC_Report` (client) | `DazedCore.Report` | One Error Magnifier report with a section per mod. |
 | `DC_Util` | `DazedCore.Util` | `try`, tile `prop`/`propIs`, `memo1` for one-argument lookups, translated `txt`/`count`, `haloNote`, `worldHours`, `squareAt`. |
+| `DC_DebugSpawn` (+ `DC_DebugSpawnMenu`) | `DazedCore.DebugSpawn` | A mod registers its items (`register(id, name, items)`); in debug mode, or for staff, the right-click menu's **Dazed debug** row spawns them all and places them in a ring of open squares around the player, through vanilla's own place call so every mod's placing hooks run. |
 | `DC_Boot` | `DazedCore.Boot` | Loads the shared modules and prints `DazedCore: ready -- ...` with the mods that registered. |
 
 ## Using it from a mod
@@ -32,6 +33,7 @@ DazedCore.Heavy.register("Base.Dazed")                 -- my heavy items come ap
 DazedCore.Sync.track("DazedPlumbNet")                  -- keep this global table in step
 DazedCore.Power.registerLoad({ id = "dazed_pump", kind = "waterpump", match = isPump, watts = watts, working = working })
 DazedCore.Note.limited(character, "IGUI_DazedPlumb_XLOutdoors")
+DazedCore.DebugSpawn.register("plumbing", "Dazed Plumbing", function() return { "Base.DazedPumpHand" } end)
 ```
 
 The picker takes a spec; see the header of `DC_Picker.lua` for every field. The caller decodes its own stored
@@ -59,6 +61,7 @@ its licence ships in those folders.
 
 ## Changes
 
+- **1.5.0.** Debug spawn: in debug mode, or for an admin or moderator on a server, right-click the ground and choose **Dazed debug** to spawn every item of a Dazed mod that registers a set (Dazed Power and Dazed Plumbing do). Parts are placed in a ring of open squares around you, two tiles out, with a free square between them; anything that finds no room, and loose items such as books and kits, go into your inventory.
 - **1.4.1.** Renamed to **Dazed Core** everywhere players see it: mod list, sandbox page, Mods options page, Error Magnifier report and the guide. The options page keeps its internal ID (`DazedUtilities`) so saved tick boxes carry over. Filled in `workshop.txt` with the Workshop description. The test runner is now `tools/tests/run_all.lua` (was `run_all.sh`) because the Steam Workshop refuses `.sh` files in an upload. Guide text brought up to date: Power's first-system steps use the real menu names, the monitor page describes the charge board, rain is clean water, and the Dank pages use the grow room dashboard and vanilla sheets instead of blackout curtains.
 
 - **1.4.0.**
