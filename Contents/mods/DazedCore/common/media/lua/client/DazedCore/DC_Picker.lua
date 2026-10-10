@@ -74,9 +74,14 @@ local function range(st)
     return 20, 3
 end
 
+-- A text key from the spec, or the core's own. Only strings count: `clear` is also the name of the
+-- spec's clear callback, and a function handed to getText throws as the window opens.
 local function key(st, name, fallback)
-    return st.spec[name] or fallback
+    local v = st.spec[name]
+    if type(v) == "string" then return v end
+    return fallback
 end
+K.textKey = key
 
 --- What the part serves, with every footprint decoded. Cached until the spec says its data changed.
 local function served(st)

@@ -82,5 +82,10 @@ NOW = NOW + K.HOVER_RECHECK_MS
 check(hoverMode() == "taken", "after the recheck interval the hover is resolved again")
 K.close(0)
 
+-- `clear` is both a text key and the clear callback: a callback must never reach getText
+local cb = { spec = { clear = function() end, clearTip = "Tooltip_Mine" } }
+check(K.textKey(cb, "clear", "IGUI_DazedCore_PickClear") == "IGUI_DazedCore_PickClear", "a clear callback falls back to the core's label")
+check(K.textKey(cb, "clearTip", "Tooltip_DazedCore_PickClear") == "Tooltip_Mine", "a string text key is used")
+
 print(string.format("picker_test: %d checks, %d failed", checks, fails))
 os.exit(fails == 0 and 0 or 1)
