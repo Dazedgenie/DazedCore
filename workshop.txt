@@ -69,4 +69,4 @@ description=The building resolver and Building Picker are adapted from [url=http
 description=
 description=[i]Mod ID: DazedCore · Version 1.6.0[/i]
 tags=Build 42;Framework;Multiplayer
-visibility=public
+visibility=unlisted
