@@ -31,10 +31,14 @@ S.order = S.order or {}
 
 --- A mod offers its items: `id` a short key, `name` what the menu calls them ("Dazed Power"), `items` a
 --  function returning full types. Asked when the row is used, so it may read tables that load later.
-function S.register(id, name, items)
-    if type(id) ~= "string" or type(items) ~= "function" then return end
+--  `opts` is optional: `label` replaces the row's "Spawn all ... items" text, and `place(character)` puts
+--  the set down itself (returning placed, kept) for parts that need a state no item carries.
+function S.register(id, name, items, opts)
+    opts = type(opts) == "table" and opts or {}
+    local place = type(opts.place) == "function" and opts.place or nil
+    if type(id) ~= "string" or (type(items) ~= "function" and not place) then return end
     if not S.sets[id] then S.order[#S.order + 1] = id end
-    S.sets[id] = { id = id, name = name or id, items = items }
+    S.sets[id] = { id = id, name = name or id, items = items, label = opts.label, place = place }
 end
 
 --- Staff by capability, the way Dazed Power decides it: B42 roles name an ordinary player "user", so the
@@ -162,6 +166,12 @@ function S.spawn(character, id)
     local set = S.sets[id]
     local inv = character and try(character, "getInventory")
     if not (set and inv) then return 0, 0, 0 end
+    if set.place then
+        local okP, placed, kept = pcall(set.place, character)
+        if not okP then print("DazedCore: debug spawn " .. id .. ": " .. tostring(placed)); return 0, 0, 0 end
+        print(string.format("DazedCore: debug spawn %s -- %d placed", id, tonumber(placed) or 0))
+        return tonumber(placed) or 0, tonumber(kept) or 0, 0
+    end
     local ok, list = pcall(set.items)
     if not ok or type(list) ~= "table" then return 0, 0, 0 end
 

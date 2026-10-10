@@ -3,7 +3,7 @@
 Shared library for the Dazed mods for Project Zomboid Build 42. It does nothing on its own.
 **Required by** *Dazed Plumbing* 0.10 and later and *Dazed Power*.
 
-- **Mod ID:** `DazedCore` · **Version:** 1.6.0 · **Game:** Build 42 · **Load order:** before any other Dazed mod (`require=DazedCore` in theirs)
+- **Mod ID:** `DazedCore` · **Version:** 1.6.1 · **Game:** Build 42 · **Load order:** before any other Dazed mod (`require=DazedCore` in theirs)
 
 ## What it holds
 
@@ -61,6 +61,7 @@ its licence ships in those folders.
 
 ## Changes
 
+- **1.6.1.** Debug spawn sets can place themselves: `DebugSpawn.register(id, name, items, { label = key, place = fn })`, where `place(character)` runs on the authority and returns placed, kept. Dazed Power uses it to put down every battery rack fill level.
 - **1.6.0.** Temperature units: a **Temperatures** drop-down on the Dazed Core options page (Game setting, Celsius, Fahrenheit) that every Dazed mod follows. Game setting uses the game's own Display > Temperature display option. Mods turn a reading in °C into text with `DazedCore.Climate.tempText(t, decimals)` ("23 C" or "73 F") or get the number and unit with `Cl.display(t)`. `DazedCore.Options.combo` and `.pick` add and read a drop-down on the shared page.
 - **1.5.0.** Debug spawn: in debug mode, or for an admin or moderator on a server, right-click the ground and choose **Dazed debug** to spawn every item of a Dazed mod that registers a set (Dazed Power and Dazed Plumbing do). Parts are placed in a ring of open squares around you, two tiles out, with a free square between them; anything that finds no room, and loose items such as books and kits, go into your inventory.
 - **1.4.1.** Renamed to **Dazed Core** everywhere players see it: mod list, sandbox page, Mods options page, Error Magnifier report and the guide. The options page keeps its internal ID (`DazedUtilities`) so saved tick boxes carry over. Filled in `workshop.txt` with the Workshop description. The test runner is now `tools/tests/run_all.lua` (was `run_all.sh`) because the Steam Workshop refuses `.sh` files in an upload. Guide text brought up to date: Power's first-system steps use the real menu names, the monitor page describes the charge board, rain is clean water, and the Dank pages use the grow room dashboard and vanilla sheets instead of blackout curtains.
