@@ -1,5 +1,10 @@
 {
     "IGUI_DazedCore_Options": "Dazed Core",
+    "IGUI_DazedCore_TempUnits": "Temperatures",
+    "IGUI_DazedCore_TempUnitsGame": "Game setting",
+    "IGUI_DazedCore_TempUnitsC": "Celsius",
+    "IGUI_DazedCore_TempUnitsF": "Fahrenheit",
+    "IGUI_DazedCore_TempUnitsTip": "How every Dazed mod shows temperatures. Game setting follows Display > Temperature display in the game's own options.",
     "IGUI_DazedCore_PickTitle": "Choose buildings",
     "IGUI_DazedCore_PickHelp": "Click a building or a structure you built to add it; click it again to remove it.",
     "IGUI_DazedCore_PickLegend": "Green: served. Yellow: a click adds it. Blue: a click removes it. Red: out of reach, or served by another.",

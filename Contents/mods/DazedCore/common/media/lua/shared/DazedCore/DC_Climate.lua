@@ -61,4 +61,33 @@ function Cl.spoilShare(t, curve)
     return c[#c][2]
 end
 
+-- Temperature units. Everything above stays in °C; only text shown to the player converts. The drop-down on the
+-- Dazed Core options page (1 Game setting, 2 Celsius, 3 Fahrenheit) wins, and Game setting follows the game's own
+-- Display > Temperature option.
+Cl.UNITS_OPTION = "TempUnits"
+
+--- True when temperatures should read in Celsius.
+function Cl.celsius()
+    local O = DazedCore.Options
+    local pick = O and O.pick and O.pick("DazedCore", Cl.UNITS_OPTION)
+    if pick == 2 then return true elseif pick == 3 then return false end
+    local core = getCore and getCore()
+    local v = core and try(core, "getOptionDisplayAsCelsius")
+    if v ~= nil then return v == true end
+    return true
+end
+
+--- A °C reading in the player's unit: the number and "C" or "F".
+function Cl.display(t)
+    if Cl.celsius() then return t, "C" end
+    return t * 9 / 5 + 32, "F"
+end
+
+--- A °C reading as the player likes to read it: "23 C" or "73 F", with `decimals` places (default none).
+function Cl.tempText(t, decimals)
+    local v, unit = Cl.display(t)
+    if decimals and decimals > 0 then return string.format("%." .. decimals .. "f %s", v, unit) end
+    return string.format("%d %s", math.floor(v + 0.5), unit)
+end
+
 return Cl
