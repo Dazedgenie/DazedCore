@@ -67,6 +67,6 @@ description=
 description=[h2]Credits and licence[/h2]
 description=The building resolver and Building Picker are adapted from [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3789425624]Off-Grid: Solar Power[/url] by cakcan, with the author's licence (CC BY-NC-SA 4.0). Dazed Core is released under the same licence. Sprite tooling from pz-sprite-forge (MIT).
 description=
-description=[i]Mod ID: DazedCore · Version 1.6.0[/i]
+description=[i]Mod ID: DazedCore · Version 1.6.1[/i]
 tags=Build 42;Framework;Multiplayer
 visibility=unlisted
