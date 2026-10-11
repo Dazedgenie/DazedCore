@@ -3,7 +3,7 @@
 Shared library for the Dazed mods for Project Zomboid Build 42. It does nothing on its own.
 **Required by** *Dazed Plumbing* 0.10 and later and *Dazed Power*.
 
-- **Mod ID:** `DazedCore` · **Version:** 1.6.1 · **Game:** Build 42 · **Load order:** before any other Dazed mod (`require=DazedCore` in theirs)
+- **Mod ID:** `DazedCore` · **Version:** 1.7.0 · **Game:** Build 42 · **Load order:** before any other Dazed mod (`require=DazedCore` in theirs)
 
 ## What it holds
 
@@ -22,6 +22,7 @@ Shared library for the Dazed mods for Project Zomboid Build 42. It does nothing 
 | `DC_Report` (client) | `DazedCore.Report` | One Error Magnifier report with a section per mod. |
 | `DC_Util` | `DazedCore.Util` | `try`, tile `prop`/`propIs`, `memo1` for one-argument lookups, translated `txt`/`count`, `haloNote`, `worldHours`, `squareAt`. |
 | `DC_DebugSpawn` (+ `DC_DebugSpawnMenu`) | `DazedCore.DebugSpawn` | A mod registers its items (`register(id, name, items)`); in debug mode, or for staff, the right-click menu's **Dazed debug** row spawns them all and places them in a ring of open squares around the player, through vanilla's own place call so every mod's placing hooks run. |
+| `registries.lua` | `DazedCore.PartTags` | The shared part tags (`dazedcore:motor_small`, `dazedcore:compressor` and 18 more), registered before scripts load. Dazed Salvage's parts carry them, and any Dazed mod can name them in a recipe without requiring Salvage. |
 | `DC_Boot` | `DazedCore.Boot` | Loads the shared modules and prints `DazedCore: ready -- ...` with the mods that registered. |
 
 ## Using it from a mod
@@ -61,6 +62,7 @@ its licence ships in those folders.
 
 ## Changes
 
+- **1.7.0.** Registers 20 shared part tags (`dazedcore:motor_small`, `dazedcore:compressor`, `dazedcore:alternator` and so on) in a new `media/registries.lua`. Dazed Salvage's parts carry them, so Power, Plumbing and the other mods can offer recipes built from salvaged parts without requiring Salvage.
 - **1.6.1.** Debug spawn sets can place themselves: `DebugSpawn.register(id, name, items, { label = key, place = fn })`, where `place(character)` runs on the authority and returns placed, kept. Dazed Power uses it to put down every battery rack fill level.
 - **1.6.0.** Temperature units: a **Temperatures** drop-down on the Dazed Core options page (Game setting, Celsius, Fahrenheit) that every Dazed mod follows. Game setting uses the game's own Display > Temperature display option. Mods turn a reading in °C into text with `DazedCore.Climate.tempText(t, decimals)` ("23 C" or "73 F") or get the number and unit with `Cl.display(t)`. `DazedCore.Options.combo` and `.pick` add and read a drop-down on the shared page.
 - **1.5.0.** Debug spawn: in debug mode, or for an admin or moderator on a server, right-click the ground and choose **Dazed debug** to spawn every item of a Dazed mod that registers a set (Dazed Power and Dazed Plumbing do). Parts are placed in a ring of open squares around you, two tiles out, with a free square between them; anything that finds no room, and loose items such as books and kits, go into your inventory.
