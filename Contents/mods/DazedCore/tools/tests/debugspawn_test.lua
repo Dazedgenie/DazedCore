@@ -134,5 +134,16 @@ local outsider = E.character(cx, cy, 0)
 N.send(outsider, S.MODULE, S.COMMAND, { set = "test" })
 check(#placedAt == 0, "the authority refuses a player who may not")
 
+------------------------------------------------------------------ a set that places itself
+local asked
+S.register("own", "own parts", nil, { label = "IGUI_Own", place = function(who) asked = who; return 3, 1 end })
+local pOwn, kOwn = S.spawn(ch, "own")
+check(asked == ch and pOwn == 3 and kOwn == 1, "a set with its own place() is handed the character and its counts")
+check(S.sets.own.label == "IGUI_Own", "a set keeps its own menu label")
+S.register("broken", "broken", nil, { place = function() error("boom") end })
+check(S.spawn(ch, "broken") == 0, "a place() that errors spawns nothing and does not throw")
+S.register("nothing", "nothing", nil, nil)
+check(S.sets.nothing == nil, "a set with neither items nor place() is refused")
+
 print(string.format("debugspawn_test: %d checks, %d failed", checks, fails))
 os.exit(fails == 0 and 0 or 1)

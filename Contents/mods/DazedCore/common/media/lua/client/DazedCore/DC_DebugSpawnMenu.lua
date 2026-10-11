@@ -18,7 +18,8 @@ local function onFill(player, context, worldobjects, test)
     context:addSubMenu(head, sub)
     for _, id in ipairs(S.order) do
         local set = S.sets[id]
-        sub:addOption(DazedCore.Util.txt("IGUI_DazedCore_DebugSpawn", set.name), worldobjects, onSpawn, playerObj, id)
+        local label = set.label and getText(set.label) or DazedCore.Util.txt("IGUI_DazedCore_DebugSpawn", set.name)
+        sub:addOption(label, worldobjects, onSpawn, playerObj, id)
     end
 end
 
