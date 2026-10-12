@@ -2,9 +2,11 @@
 
      B42 runs every mod's media/registries.lua before it reads item and recipe scripts, and a script naming an
      unregistered tag stops script loading. Registering the shared part tags here, in the Core every Dazed mod
-     already requires, means any Dazed mod can name them in a recipe (tags[dazedcore:compressor]) whether or not
-     Dazed Salvage, which makes the items that carry them, is installed. With Salvage missing, the tag matches
-     no item and the recipe simply can't be made. ]]
+     already requires, lets Dazed Salvage's part items carry them whatever else is installed.
+
+     Don't name these tags in another mod's recipe inputs (tags[dazedcore:compressor]): B42 refuses to load the
+     world when a recipe's tag matches no item ("Tag has no items"), which is the case whenever Salvage is
+     missing. Name Salvage's items instead ([Base.DazedPartCompressor]); a missing item name is skipped quietly. ]]
 
 DazedCore = DazedCore or {}
 DazedCore.PartTags = DazedCore.PartTags or {}
