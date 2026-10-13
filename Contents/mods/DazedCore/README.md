@@ -3,7 +3,7 @@
 Shared library for the Dazed mods for Project Zomboid Build 42. It does nothing on its own.
 **Required by** *Dazed Plumbing* 0.10 and later and *Dazed Power*.
 
-- **Mod ID:** `DazedCore` · **Version:** 1.7.0 · **Game:** Build 42 · **Load order:** before any other Dazed mod (`require=DazedCore` in theirs)
+- **Mod ID:** `DazedCore` · **Version:** 1.8.0 · **Game:** Build 42 · **Load order:** before any other Dazed mod (`require=DazedCore` in theirs)
 
 ## What it holds
 
@@ -22,6 +22,7 @@ Shared library for the Dazed mods for Project Zomboid Build 42. It does nothing 
 | `DC_Report` (client) | `DazedCore.Report` | One Error Magnifier report with a section per mod. |
 | `DC_Util` | `DazedCore.Util` | `try`, tile `prop`/`propIs`, `memo1` for one-argument lookups, translated `txt`/`count`, `haloNote`, `worldHours`, `squareAt`. |
 | `DC_DebugSpawn` (+ `DC_DebugSpawnMenu`) | `DazedCore.DebugSpawn` | A mod registers its items (`register(id, name, items)`); in debug mode, or for staff, the right-click menu's **Dazed debug** row spawns them all and places them in a ring of open squares around the player, through vanilla's own place call so every mod's placing hooks run. |
+| `DC_Control` (+ `DC_ControlWindow`, `DC_ControlOpen`) | `DazedCore.Control` | **Dazed Control**, the staff panel. A mod adds a tab with `register(id, { title, order, view, commands })`: `view(viewer)` runs on the authority and returns plain data (lamps, cards with rows, items, log lines and buttons); each button runs one of the Net commands the tab names in `commands`, at the level named there (`"admin"` or `"mod"`). Admins use every button, moderators look; debug mode counts as admin. Every action is logged to the console, `Zomboid/Lua/DazedControl.log` and the Overview tab. Opened from a staff-only sidebar icon or a button in the vanilla admin panel. |
 | `registries.lua` | `DazedCore.PartTags` | The shared part tags (`dazedcore:motor_small`, `dazedcore:compressor` and 18 more), registered before scripts load. Dazed Salvage's parts carry them, and any Dazed mod can name them in a recipe without requiring Salvage. |
 | `DC_Boot` | `DazedCore.Boot` | Loads the shared modules and prints `DazedCore: ready -- ...` with the mods that registered. |
 
@@ -62,6 +63,7 @@ its licence ships in those folders.
 
 ## Changes
 
+- **1.8.0.** **Dazed Control**, a staff panel in Dazed Power's charge board style. Admins and moderators (or anyone in debug mode) open it from a new sidebar icon or the **Dazed Control** button in the vanilla admin panel. The Overview tab shows game time, players and their positions, the Dazed mods loaded and the staff log. Other mods add their own tabs; each button runs on the server after a fresh permission check, and moderators can look but not press. The bottom bar picks a target: yourself, any online player, or a spot clicked on the world map. Every staff action is written to the server console and `Zomboid/Lua/DazedControl.log`.
 - **1.7.0.** Registers 20 shared part tags (`dazedcore:motor_small`, `dazedcore:compressor`, `dazedcore:alternator` and so on) in a new `media/registries.lua`. Dazed Salvage's parts carry them, so Power, Plumbing and the other mods can offer recipes built from salvaged parts without requiring Salvage.
 - **1.6.1.** Debug spawn sets can place themselves: `DebugSpawn.register(id, name, items, { label = key, place = fn })`, where `place(character)` runs on the authority and returns placed, kept. Dazed Power uses it to put down every battery rack fill level.
 - **1.6.0.** Temperature units: a **Temperatures** drop-down on the Dazed Core options page (Game setting, Celsius, Fahrenheit) that every Dazed mod follows. Game setting uses the game's own Display > Temperature display option. Mods turn a reading in °C into text with `DazedCore.Climate.tempText(t, decimals)` ("23 C" or "73 F") or get the number and unit with `Cl.display(t)`. `DazedCore.Options.combo` and `.pick` add and read a drop-down on the shared page.
