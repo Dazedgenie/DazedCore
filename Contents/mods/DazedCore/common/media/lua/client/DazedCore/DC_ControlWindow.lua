@@ -23,6 +23,7 @@ local function px(v) return math.floor(v * S + 0.5) end
 
 local BASE_W, BASE_H = 860, 600
 local REFRESH_MS = 5000
+local PICK_REFRESH_MS = 2000
 local CONFIRM_MS = 3000
 local TEX = "media/ui/DazedCore/Control/"
 
@@ -115,6 +116,8 @@ function Win:setView(args)
     self.tabs = type(args.tabs) == "table" and args.tabs or self.tabs or {}
     self.level = args.level
     self.players = type(args.players) == "table" and args.players or {}
+    self.spots = type(args.spots) == "table" and args.spots or {}
+    self.marks = type(args.marks) == "table" and args.marks or {}
     self.view = type(args.view) == "table" and args.view or {}
 end
 
@@ -162,7 +165,11 @@ function Win:press(b)
         return
     end
     self.armed = nil
-    local req = { tab = self.tab, module = b.module, command = b.command, args = b.args }
+    if b.route then
+        self:planRoute(b)
+        return
+    end
+    local req ={ tab = self.tab, module = b.module, command = b.command, args = b.args }
     if b.target then req.target = self.target or {} end
     Net.send(self.player, C.MODULE, "ctlAct", req)
     self:status("IGUI_DazedControl_Sent", true)
@@ -352,8 +359,14 @@ function Win:update()
     if C.picking == self and getTimestampMs() - (self.pickAt or 0) > 1000
             and not (ISWorldMap_instance and ISWorldMap_instance:isVisible()) then
         C.picking = nil
+        if self.routing then
+            self.routing = nil
+            self:status("IGUI_DazedControl_RouteCancelled", false)
+        end
     end
-    if getTimestampMs() - (self.asked or 0) > REFRESH_MS then self:request() end
+    -- faster while the map is up, so the player marks follow the players
+    local every = C.picking == self and PICK_REFRESH_MS or REFRESH_MS
+    if getTimestampMs() - (self.asked or 0) > every then self:request() end
 end
 
 function Win:onMouseWheel(del)
@@ -377,17 +390,176 @@ function Win:close()
     self:setVisible(false)
     self:removeFromUIManager()
     if C.window == self then C.window = nil end
+    if C.picking == self then C.picking = nil end
 end
 
 ---------------------------------------------------------------- picking a spot on the world map
 
--- The world map takes the next plain click (not a drag) as the spot and closes, back to the panel under it.
+-- While the panel holds the map it shows everything: no fog over unvisited areas, and every player marked. What
+-- the map showed before is put back when it closes, before vanilla saves its settings.
+local REVEAL = { { "hideUnvisitedAreas", "setHideUnvisitedAreas", false }, { "showPlayers", "setShowPlayers", true },
+    { "showRemotePlayers", "setShowRemotePlayers", true }, { "showPlayerNames", "setShowPlayerNames", true } }
+
+local function reveal(map)
+    if map.dazedRevealed or not map.mapAPI then return end
+    map.dazedRevealed = {}
+    for _, r in ipairs(REVEAL) do
+        map.dazedRevealed[r[1]] = map[r[1]]
+        pcall(map[r[2]], map, r[3])
+    end
+end
+
+local function unreveal(map)
+    local was = map.dazedRevealed
+    if not was then return end
+    map.dazedRevealed = nil
+    for _, r in ipairs(REVEAL) do pcall(map[r[2]], map, was[r[1]]) end
+end
+
+-- World tile to map pixels; nil when the map cannot say.
+local function toUI(map, x, y)
+    local okX, ux = pcall(map.mapAPI.worldToUIX, map.mapAPI, x, y)
+    local okY, uy = pcall(map.mapAPI.worldToUIY, map.mapAPI, x, y)
+    if okX and okY and ux and uy then return ux, uy end
+    return nil
+end
+
+local function line(map, x1, y1, x2, y2, thick, c, a)
+    pcall(map.drawLine, map, nil, x1, y1, x2, y2, thick, a or 1, c[1], c[2], c[3])
+end
+
+-- A label on a dark tag, centred under ux, uy.
+local function tag(map, s, ux, uy)
+    local w = getTextManager():MeasureStringX(UIFont.Small, s) + 8
+    map:drawRect(ux - w / 2, uy, w, getTextManager():getFontHeight(UIFont.Small) + 2, 0.8, K.frame[1], K.frame[2], K.frame[3])
+    map:drawTextCentre(s, ux, uy + 1, K.barText[1], K.barText[2], K.barText[3], 1, UIFont.Small)
+end
+
+-- A square of colour c with a dark rim, and optionally a number on it.
+local function dot(map, ux, uy, size, c, num)
+    local h = size / 2
+    map:drawRect(ux - h - 1, uy - h - 1, size + 2, size + 2, 1, K.ink[1], K.ink[2], K.ink[3])
+    map:drawRect(ux - h, uy - h, size, size, 1, c[1], c[2], c[3])
+    if num then map:drawTextCentre(tostring(num), ux, uy - getTextManager():getFontHeight(UIFont.Small) / 2, 1, 1, 1, 1, UIFont.Small) end
+end
+
+-- A mark and name for each online player the server reported. Your own mark is vanilla's.
+local function drawSpots(map, win)
+    local me = win.player and win.player:getUsername()
+    for _, s in ipairs(win.spots or {}) do
+        if s.n ~= me then
+            local ux, uy = toUI(map, s.x, s.y)
+            if ux then
+                dot(map, ux, uy, 8, K.red)
+                tag(map, s.n, ux, uy + 7)
+            end
+        end
+    end
+end
+
+-- The marks the tabs sent: a ring for the spread, the route as a line (done legs grey), numbered checkpoints.
+local function drawMarks(map, win)
+    for _, m in ipairs(win.marks or {}) do
+        local c = TONE[m.tone] or K.amber
+        local ux, uy = toUI(map, m.x, m.y)
+        local route = type(m.route) == "table" and m.route or {}
+        local nextI = tonumber(m.next) or 1
+        local px0, py0 = ux, uy
+        for i, p in ipairs(route) do
+            local rx, ry = toUI(map, p.x, p.y)
+            if rx then
+                local done = i < nextI
+                if i >= nextI and px0 then line(map, px0, py0, rx, ry, 2, c, 0.9) end
+                if done and route[i - 1] then
+                    local qx, qy = toUI(map, route[i - 1].x, route[i - 1].y)
+                    if qx then line(map, qx, qy, rx, ry, 1, K.muted, 0.7) end
+                end
+                dot(map, rx, ry, 14, done and K.muted or c, i)
+                if i >= nextI then px0, py0 = rx, ry end
+            end
+        end
+        if ux then
+            local r = tonumber(m.r) or 0
+            if r > 0 then
+                local lx, ly
+                for k = 0, 24 do
+                    local a = k * math.pi / 12
+                    local cx, cy = toUI(map, m.x + math.cos(a) * r, m.y + math.sin(a) * r)
+                    if cx and lx then line(map, lx, ly, cx, cy, 2, c, 0.8) end
+                    lx, ly = cx, cy
+                end
+            end
+            dot(map, ux, uy, 12, c)
+            if m.label then tag(map, words(m.label), ux, uy + 9) end
+        end
+    end
+end
+
+-- The route being planned: blue, numbered, joined in order.
+local function drawPlan(map, points)
+    local lx, ly
+    for i, p in ipairs(points) do
+        local ux, uy = toUI(map, p.x, p.y)
+        if ux then
+            if lx then line(map, lx, ly, ux, uy, 2, K.blue) end
+            dot(map, ux, uy, 14, K.blue, i)
+            lx, ly = ux, uy
+        end
+    end
+end
+
+-- The plan's buttons along the top of the map, under the hint; each records a click region on the map.
+local function planBar(map, win)
+    map.dazedRegions = {}
+    local plan = win.routing
+    local f = UIFont.Small
+    local h = getTextManager():getFontHeight(f) + 8
+    local list = {
+        { "IGUI_DazedControl_RouteUndo", K.btn, K.ink, #plan.points > 0, function() table.remove(plan.points) end },
+        { "IGUI_DazedControl_RouteClear", K.btn, K.ink, #plan.points > 0, function() plan.points = {} end },
+        { "IGUI_DazedControl_RouteSend", K.green, { 1, 1, 1 }, #plan.points > 0, function() win:sendRoute() end },
+        { "IGUI_DazedControl_RouteCancel", K.red, { 1, 1, 1 }, true, function() win:cancelRoute() end },
+    }
+    local total = 0
+    for _, b in ipairs(list) do
+        b.w = getTextManager():MeasureStringX(f, string.upper(getText(b[1]))) + 20
+        total = total + b.w + 8
+    end
+    local x = (map:getWidth() - total + 8) / 2
+    for _, b in ipairs(list) do
+        local body, ink = b[2], b[3]
+        if not b[4] then body, ink = K.card, K.line end
+        map:drawRect(x, 78, b.w, h, 1, body[1], body[2], body[3])
+        map:drawRectBorder(x, 78, b.w, h, 1, K.ink[1], K.ink[2], K.ink[3])
+        map:drawTextCentre(string.upper(getText(b[1])), x + b.w / 2, 82, ink[1], ink[2], ink[3], 1, f)
+        if b[4] then map.dazedRegions[#map.dazedRegions + 1] = { x = x, y = 78, w = b.w, h = h, fn = b[5] } end
+        x = x + b.w + 8
+    end
+end
+
+local function regionAt(map, x, y)
+    for _, r in ipairs(map.dazedRegions or {}) do
+        if x >= r.x and x < r.x + r.w and y >= r.y and y < r.y + r.h then return r end
+    end
+    return nil
+end
+
+-- Picking a spot, the world map takes the next plain click (not a drag) as the spot and closes, back to the panel
+-- under it. Planning a route, each plain click adds a checkpoint until Send or Cancel.
 local function patchMap()
     if not ISWorldMap or ISWorldMap.dazedControlPatched then return end
     ISWorldMap.dazedControlPatched = true
-    local down, up, rend = ISWorldMap.onMouseDown, ISWorldMap.onMouseUp, ISWorldMap.render
+    local down, up, rend, close = ISWorldMap.onMouseDown, ISWorldMap.onMouseUp, ISWorldMap.render, ISWorldMap.close
+    function ISWorldMap:close()
+        unreveal(self)
+        return close(self)
+    end
     function ISWorldMap:onMouseDown(x, y)
-        if C.picking then self.dazedDown = { x, y } end
+        if C.picking then
+            self.dazedDown = { x, y }
+            -- a plan button: keep the press from starting a drag of the map
+            if C.picking.routing and regionAt(self, x, y) then return true end
+        end
         if down then return down(self, x, y) end
         return false
     end
@@ -398,6 +570,16 @@ local function patchMap()
             local okX, wx = pcall(self.mapAPI.uiToWorldX, self.mapAPI, x, y)
             local okY, wy = pcall(self.mapAPI.uiToWorldY, self.mapAPI, x, y)
             local pick = C.picking
+            local plan = pick.routing
+            if plan then
+                local r = regionAt(self, x, y)
+                if r then
+                    r.fn()
+                elseif okX and okY and wx and wy and #plan.points < C.ROUTE_MAX then
+                    plan.points[#plan.points + 1] = { x = math.floor(wx), y = math.floor(wy) }
+                end
+                return true
+            end
             C.picking = nil
             if okX and okY and wx and wy then
                 pick.target = { x = math.floor(wx), y = math.floor(wy), z = 0 }
@@ -413,9 +595,18 @@ local function patchMap()
         return false
     end
     function ISWorldMap:render()
+        if C.picking then reveal(self) else unreveal(self) end
         if rend then rend(self) end
         if C.picking then
+            local win = C.picking
+            drawMarks(self, win)
+            drawSpots(self, win)
             local s = getText("IGUI_DazedControl_PickHint")
+            if win.routing then
+                drawPlan(self, win.routing.points)
+                planBar(self, win)
+                s = U.txt("IGUI_DazedControl_RouteHint", #win.routing.points, C.ROUTE_MAX)
+            end
             local w = getTextManager():MeasureStringX(UIFont.Medium, s) + 24
             local x = (self:getWidth() - w) / 2
             self:drawRect(x, 40, w, 30, 0.9, 0.235, 0.282, 0.227)
@@ -424,19 +615,46 @@ local function patchMap()
     end
 end
 
-function Win:pickOnMap()
+-- Open the map for this window: to pick a spot, or with `routing` set to plan a route.
+function Win:openMap(routing)
     patchMap()
     if not (ISWorldMap and ISWorldMap.IsAllowed and ISWorldMap.IsAllowed()) then
         self:status("IGUI_DazedControl_NoMap", false)
         return
     end
     C.picking = self
+    self.routing = routing
     self.pickAt = getTimestampMs()
     local ok = pcall(ISWorldMap.ShowWorldMap, self.playerNum)
     if not ok then
-        C.picking = nil
+        C.picking, self.routing = nil, nil
         self:status("IGUI_DazedControl_NoMap", false)
     end
+end
+
+function Win:pickOnMap() self:openMap(nil) end
+
+--- Plan a route for a `route` button: checkpoints are clicked on the map, then sent with the button's command.
+function Win:planRoute(b) self:openMap({ button = b, points = {} }) end
+
+local function closePlan(win)
+    win.routing = nil
+    if C.picking == win then C.picking = nil end
+    pcall(ISWorldMap.HideWorldMap, win.playerNum)
+end
+
+function Win:sendRoute()
+    local plan = self.routing
+    if not (plan and #plan.points > 0) then return end
+    local b = plan.button
+    Net.send(self.player, C.MODULE, "ctlAct", { tab = self.tab, module = b.module, command = b.command, args = b.args, route = plan.points })
+    self:status(U.txt("IGUI_DazedControl_RouteSent", #plan.points), true)
+    closePlan(self)
+end
+
+function Win:cancelRoute()
+    self:status("IGUI_DazedControl_RouteCancelled", false)
+    closePlan(self)
 end
 
 ---------------------------------------------------------------- opening

@@ -6,12 +6,17 @@
        def.view      fn(viewer) run by the authority, returning what the tab shows (below)
        def.commands  { ["Module.command"] = "admin" | "mod" }: the Net commands its buttons may run, and the level
                      each needs. A button can only run a command its tab names here.
+       def.marks     optional fn(viewer) run by the authority, returning marks for the panel's map, whichever tab is
+                     open: { { x, y, label, tone, r = radius in tiles, route = { { x, y } }, next = index } }.
+                     `route` is drawn as a line from the mark through its checkpoints; those before `next` are done.
 
      A view is plain data, so the window draws every tab the same way and mods write no UI code:
        { lamps = { { label, "green"|"amber"|"red"|"off" } },
          cards = { { title, rows = { { label, value, tone } }, items = { { text, sub, tone, buttons } },
                      lines = { "log line" }, buttons = { button } } } }
-       button = { label, module, command, args, danger = true, target = true }
+       button = { label, module, command, args, danger = true, target = true, route = true }
+     A `route` button opens the map for checkpoints instead of running at once; the command gets them as
+     args.route = { { x = , y = } }, at most C.ROUTE_MAX.
      Any text may be a translation key, { key, { args } } or plain text: the server has no translations, so the
      client turns keys into words. A `target` button gets the spot the staff member picked (x, y, z) added to its
      args, resolved again by the authority from the target's name when the target is a player.
@@ -35,6 +40,7 @@ C.MODULE = "DazedCore"
 C.LOG_KEY = "DazedControlLog"
 C.LOG_KEEP = 40
 C.LOG_FILE = "DazedControl.log"
+C.ROUTE_MAX = 16
 C.tabs = C.tabs or {}
 C.order = C.order or {}
 
@@ -212,6 +218,37 @@ local function markView(tab, view)
     return view
 end
 
+-- Every tab's map marks, so the map shows them whichever tab is open.
+local function marksOf(player)
+    local out = {}
+    for _, id in ipairs(C.order) do
+        local tab = C.tabs[id]
+        if tab.marks then
+            local ok, list = pcall(tab.marks, player)
+            if not ok then
+                print("DazedCore: control tab " .. id .. " marks failed: " .. tostring(list))
+            elseif type(list) == "table" then
+                for _, m in ipairs(list) do
+                    if type(m) == "table" and tonumber(m.x) and tonumber(m.y) then out[#out + 1] = m end
+                end
+            end
+        end
+    end
+    return out
+end
+
+-- Checkpoints as sent by a client: whole tiles, at most C.ROUTE_MAX, anything else dropped.
+local function cleanRoute(list)
+    if type(list) ~= "table" then return nil end
+    local out = {}
+    for _, p in ipairs(list) do
+        local x, y = type(p) == "table" and tonumber(p.x), type(p) == "table" and tonumber(p.y)
+        if x and y then out[#out + 1] = { x = math.floor(x), y = math.floor(y) } end
+        if #out >= C.ROUTE_MAX then break end
+    end
+    return #out > 0 and out or nil
+end
+
 local function tabList()
     local out = {}
     for _, id in ipairs(C.order) do out[#out + 1] = { id = id, title = C.tabs[id].title or id } end
@@ -224,11 +261,17 @@ function C.sendView(player, id)
     if not level then return end
     local tab = C.tabs[id] or C.tabs[C.order[1]]
     if not tab then return end
-    local names = {}
-    for _, p in ipairs(C.players()) do names[#names + 1] = nameOf(p) end
+    -- names for the target button, and where each one stands for the map: a client only knows the players near it
+    local names, spots = {}, {}
+    for _, p in ipairs(C.players()) do
+        local n = nameOf(p)
+        names[#names + 1] = n
+        if n then spots[#spots + 1] = { n = n, x = math.floor(p:getX()), y = math.floor(p:getY()) } end
+    end
     local view = markView(tab, viewOf(tab, player))
     view.clock = stamp()
-    Net.reply(player, C.MODULE, "ctlView", { tab = tab.id, tabs = tabList(), level = level, players = names, view = view })
+    Net.reply(player, C.MODULE, "ctlView", { tab = tab.id, tabs = tabList(), level = level, players = names, spots = spots,
+        marks = marksOf(player), view = view })
 end
 
 Net.on(C.MODULE, "ctlOpen", function(player, args)
@@ -265,6 +308,16 @@ Net.on(C.MODULE, "ctlAct", function(player, args)
         end
         cargs.x, cargs.y, cargs.z, cargs.targetName = x, y, z, who
         where = string.format(" at %d,%d,%d%s", x, y, z, who and (" (" .. who .. ")") or "")
+    end
+    if args.route ~= nil then
+        local route = cleanRoute(args.route)
+        if not route then
+            Net.reply(player, C.MODULE, "ctlResult", { ok = false, line = "IGUI_DazedControl_NoRoute" })
+            return
+        end
+        cargs.route = route
+        local last = route[#route]
+        where = where .. string.format(" via %d checkpoints to %d,%d", #route, last.x, last.y)
     end
     local ok, err = pcall(h.fn, player, cargs)
     C.log(nameOf(player), string.format("%s %s.%s%s%s", ok and "ran" or "FAILED", module, command, where,
