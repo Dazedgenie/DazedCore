@@ -14,6 +14,7 @@ require "DazedCore/DC_Climate"
 require "DazedCore/DC_Detect"
 require "DazedCore/DC_Net"
 require "DazedCore/DC_DebugSpawn"
+require "DazedCore/DC_ClearArea"
 require "DazedCore/DC_Control"
 
 DazedCore.Boot = DazedCore.Boot or {}
