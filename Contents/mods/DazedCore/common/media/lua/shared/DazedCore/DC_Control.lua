@@ -370,4 +370,73 @@ C.register("overview", {
     end,
 })
 
+---------------------------------------------------------------- Fixes, one-off repairs any mod can add
+
+--[[ A mod adds a fix with `registerFix(id, def)`:
+       def.title  def.desc   plain text or a translation key
+       def.mod    the mod's name, shown after the description
+       def.scope  "player" (runs on the target player) or "world" (runs at the target spot)
+       def.run    fn(staff, info) on the authority; info = { x, y, z, player = IsoPlayer or nil, name = string or nil }.
+                  Returns true (or true, "what it did"), or false, "why not": a false answer shows as failed.
+     The Fixes tab lists them under the two scopes with a Run button that aims at the panel's target. Admins only:
+     a fix changes a player or the world, so moderators only look. ]]
+
+C.fixes = C.fixes or {}
+C.fixOrder = C.fixOrder or {}
+
+function C.registerFix(id, def)
+    if type(id) ~= "string" or type(def) ~= "table" or type(def.run) ~= "function" then return nil end
+    def.id = id
+    def.scope = def.scope == "player" and "player" or "world"
+    if not C.fixes[id] then C.fixOrder[#C.fixOrder + 1] = id end
+    C.fixes[id] = def
+    table.sort(C.fixOrder, function(a, b)
+        local fa, fb = C.fixes[a], C.fixes[b]
+        if fa.scope ~= fb.scope then return fa.scope == "player" end
+        local ta, tb = tostring(fa.title or a), tostring(fb.title or b)
+        if ta ~= tb then return ta < tb end
+        return a < b
+    end)
+    return def
+end
+
+Net.on(C.MODULE, "ctlFix", function(player, args)
+    if C.level(player) ~= "admin" then return end
+    local fix = type(args.id) == "string" and C.fixes[args.id]
+    if not fix then return end
+    local info = { x = args.x, y = args.y, z = args.z, name = args.targetName }
+    if fix.scope == "player" then
+        info.player = args.targetName and C.findPlayer(args.targetName) or player
+        info.name = info.name or nameOf(player)
+        if not info.player then error("player not found") end
+    end
+    local ok, done, msg = pcall(fix.run, player, info)
+    if not ok then error(tostring(done)) end
+    if done == false then error(tostring(msg or "the fix did not apply")) end
+    if type(msg) == "string" then C.log(nameOf(player), "fix " .. fix.id .. ": " .. msg) end
+end, 500)
+
+C.register("fixes", {
+    title = "IGUI_DazedControl_Fixes",
+    order = 90,
+    commands = { ["DazedCore.ctlFix"] = "admin" },
+    view = function()
+        local groups = { player = {}, world = {} }
+        for _, id in ipairs(C.fixOrder) do
+            local f = C.fixes[id]
+            local sub = tostring(f.desc or "")
+            if f.mod then sub = sub .. (sub ~= "" and " (" or "(") .. tostring(f.mod) .. ")" end
+            local list = groups[f.scope]
+            list[#list + 1] = { text = f.title or id, sub = sub,
+                buttons = { { label = "IGUI_DazedControl_Run", module = C.MODULE, command = "ctlFix", args = { id = id }, target = true } } }
+        end
+        local cards = {}
+        if #groups.player > 0 then cards[#cards + 1] = { title = "IGUI_DazedControl_FixesPlayer", items = groups.player } end
+        if #groups.world > 0 then cards[#cards + 1] = { title = "IGUI_DazedControl_FixesWorld", items = groups.world } end
+        if #cards == 0 then cards[1] = { title = "IGUI_DazedControl_Fixes", lines = { "IGUI_DazedControl_FixesNone" } } end
+        local n = #C.fixOrder
+        return { lamps = { { { "IGUI_DazedControl_FixesCount", { n } }, n > 0 and "green" or "off" } }, cards = cards }
+    end,
+})
+
 return C
