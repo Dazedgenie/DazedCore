@@ -106,6 +106,37 @@ C.register("bad", { title = "Bad", view = function() error("boom") end })
 N.send(admin, C.MODULE, "ctlOpen", { tab = "bad" })
 check(views[1] and views[1].view.cards[1].title == "IGUI_DazedControl_ViewFailed", "a failing view is shown, not thrown")
 
+------------------------------------------------------------------ fixes
+local fixed = {}
+check(C.registerFix("bad", { title = "no run" }) == nil, "a fix without run is refused")
+C.registerFix("frost", { title = "Clear frostbite", desc = "heal it", mod = "Climate", scope = "player",
+    run = function(staff, info) fixed[#fixed + 1] = { who = info.name, player = info.player, staff = staff } return true, "cleared" end })
+C.registerFix("claims", { title = "Release claims", desc = "stuck claims", mod = "Butchery", scope = "world",
+    run = function(staff, info) fixed[#fixed + 1] = { x = info.x, y = info.y } return true end })
+C.registerFix("nope", { title = "Always fails", scope = "world", run = function() return false, "nothing to do" end })
+C.registerFix("boom", { title = "Throws", scope = "world", run = function() error("x") end })
+check(C.fixOrder[1] == "frost", "player fixes sort before world fixes")
+views = {}
+N.send(admin, C.MODULE, "ctlOpen", { tab = "fixes" })
+local fv = views[1] and views[1].view
+check(fv and #fv.cards == 2 and #fv.cards[1].items == 1 and #fv.cards[2].items == 3, "the Fixes tab groups fixes by scope")
+check(fv and fv.cards[1].items[1].sub == "heal it (Climate)" and fv.cards[1].items[1].buttons[1].need == "admin", "a fix shows its mod and needs admin")
+N.send(admin, C.MODULE, "ctlAct", { tab = "fixes", module = C.MODULE, command = "ctlFix", args = { id = "frost" }, target = { player = "Pete" } })
+check(#fixed == 1 and fixed[1].who == "Pete" and fixed[1].player == user, "a player fix runs on the target player")
+N.send(admin, C.MODULE, "ctlAct", { tab = "fixes", module = C.MODULE, command = "ctlFix", args = { id = "frost" }, target = {} })
+check(#fixed == 2 and fixed[2].player == admin, "with no target a player fix runs on the staff member")
+N.send(admin, C.MODULE, "ctlAct", { tab = "fixes", module = C.MODULE, command = "ctlFix", args = { id = "claims" }, target = { x = 100, y = 200 } })
+check(#fixed == 3 and fixed[3].x == 100 and fixed[3].y == 200, "a world fix runs at the target spot")
+N.send(admin, C.MODULE, "ctlAct", { tab = "fixes", module = C.MODULE, command = "ctlFix", args = { id = "nope" } })
+check(results[#results].ok == false and results[#results].line == "IGUI_DazedControl_Failed", "a fix that answers false shows as failed")
+N.send(admin, C.MODULE, "ctlAct", { tab = "fixes", module = C.MODULE, command = "ctlFix", args = { id = "boom" } })
+check(results[#results].ok == false, "a fix that throws shows as failed")
+N.send(admin, C.MODULE, "ctlAct", { tab = "fixes", module = C.MODULE, command = "ctlFix", args = { id = "missing" } })
+local n = #fixed
+N.send(mod, C.MODULE, "ctlAct", { tab = "fixes", module = C.MODULE, command = "ctlFix", args = { id = "claims" } })
+N.send(user, C.MODULE, "ctlAct", { tab = "fixes", module = C.MODULE, command = "ctlFix", args = { id = "claims" } })
+check(#fixed == n, "moderators and players cannot run a fix")
+
 ------------------------------------------------------------------ log
 local log = md[C.LOG_KEY].lines
 check(log and #log >= 5 and string.find(log[1], "Kyle", 1, true), "actions are logged, newest first")

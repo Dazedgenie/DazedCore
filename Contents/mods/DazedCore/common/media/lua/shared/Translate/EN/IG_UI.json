@@ -141,5 +141,11 @@
     "IGUI_DazedControl_Done": "Done",
     "IGUI_DazedControl_Failed": "Failed, see the server console",
     "IGUI_DazedControl_ViewOnly": "Look only: moderators cannot use these buttons",
-    "IGUI_DazedControl_Loading": "Asking the server..."
+    "IGUI_DazedControl_Loading": "Asking the server...",
+    "IGUI_DazedControl_Fixes": "Fixes",
+    "IGUI_DazedControl_FixesPlayer": "Player fixes (the target player)",
+    "IGUI_DazedControl_FixesWorld": "World fixes (near the target)",
+    "IGUI_DazedControl_FixesNone": "No Dazed mod has added a fix yet",
+    "IGUI_DazedControl_FixesCount": "Fixes available: {1}",
+    "IGUI_DazedControl_Run": "Run"
 }

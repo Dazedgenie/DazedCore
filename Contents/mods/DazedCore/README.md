@@ -3,7 +3,7 @@
 Shared library for the Dazed mods for Project Zomboid Build 42. It does nothing on its own.
 **Required by** *Dazed Plumbing* 0.10 and later and *Dazed Power*.
 
-- **Mod ID:** `DazedCore` · **Version:** 1.8.1 · **Game:** Build 42 · **Load order:** before any other Dazed mod (`require=DazedCore` in theirs)
+- **Mod ID:** `DazedCore` · **Version:** 1.8.2 · **Game:** Build 42 · **Load order:** before any other Dazed mod (`require=DazedCore` in theirs)
 
 ## What it holds
 
@@ -63,6 +63,7 @@ its licence ships in those folders.
 
 ## Changes
 
+- **1.8.2.** Dazed Control gets a **Fixes** tab: any Dazed mod can add a one-off repair with `DazedCore.Control.registerFix(id, { title, desc, mod, scope = "player" or "world", run = fn(staff, info) })`, and staff run it on the target player or spot (admins only, logged). Other mods add their own Dazed Control tabs (Power, Dank, Plumbing, Pastimes) in their own updates.
 - **1.8.1.** Dazed Control's map shows everything: **Pick on map** lifts the fog over unvisited areas and marks every online player by name (the server sends positions, so far-off players show too), and puts the map back as it was on close. Tabs can add their own map marks (a spot, a ring for spread, a route with numbered checkpoints), and a button can ask for a **route**: the map opens for clicking checkpoints, with Undo, Clear, Send route and Cancel.
 - **1.8.0.** **Dazed Control**, a staff panel in Dazed Power's charge board style. Admins and moderators (or anyone in debug mode) open it from a new sidebar icon or the **Dazed Control** button in the vanilla admin panel. The Overview tab shows game time, players and their positions, the Dazed mods loaded and the staff log. Other mods add their own tabs; each button runs on the server after a fresh permission check, and moderators can look but not press. The bottom bar picks a target: yourself, any online player, or a spot clicked on the world map. Every staff action is written to the server console and `Zomboid/Lua/DazedControl.log`.
 - **1.7.0.** Registers 20 shared part tags (`dazedcore:motor_small`, `dazedcore:compressor`, `dazedcore:alternator` and so on) in a new `media/registries.lua`. Dazed Salvage's parts carry them, so Power, Plumbing and the other mods can offer recipes built from salvaged parts without requiring Salvage.
