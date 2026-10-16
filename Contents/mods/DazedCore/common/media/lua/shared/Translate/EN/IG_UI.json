@@ -101,6 +101,8 @@
     "IGUI_DazedGuide_Book_dank": "Dank",
     "IGUI_DazedCore_Debug": "Dazed debug",
     "IGUI_DazedCore_DebugSpawn": "Spawn all {1} items around me",
+    "IGUI_DazedCore_DebugGave": "Gave you {1} {2} items",
+    "IGUI_DazedCore_DebugPlaced": "Placed {1} {2} items",
     "IGUI_DazedCore_DebugSpawned": "Placed {1} {2} items; {3} more went into your inventory",
     "IGUI_DazedCore_Clear": "Clear area",
     "IGUI_DazedCore_ClearRadius": "Clear {1} tiles around me",

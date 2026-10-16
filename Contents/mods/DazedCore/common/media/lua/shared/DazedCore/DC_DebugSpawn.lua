@@ -211,7 +211,13 @@ DazedCore.Net.on(S.MODULE, S.COMMAND, function(player, args)
     local set = S.sets[args.set]
     if not set then return end
     local placed, kept = S.spawn(player, set.id)
-    DazedCore.Note.say(player, "IGUI_DazedCore_DebugSpawned", { placed, set.name, kept })
+    if placed == 0 then
+        DazedCore.Note.say(player, "IGUI_DazedCore_DebugGave", { kept, set.name })
+    elseif kept == 0 then
+        DazedCore.Note.say(player, "IGUI_DazedCore_DebugPlaced", { placed, set.name })
+    else
+        DazedCore.Note.say(player, "IGUI_DazedCore_DebugSpawned", { placed, set.name, kept })
+    end
 end, 2000)
 
 return S
