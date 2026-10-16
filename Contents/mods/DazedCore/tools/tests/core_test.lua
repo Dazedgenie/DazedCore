@@ -88,6 +88,11 @@ E.square(2, 2, 0).power = false
 check(W.registerProvider({ id = "bad" }) == nil, "provider needs isPowered")
 W.registerProvider({ id = "wire", isPowered = function(obj) if obj == pump then return true end return nil end })
 check(W.wired(pump) and W.isPowered(pump) and not W.wired(lamp), "provider powers only its object")
+check(W.feeds(pump) == true and W.feeds(lamp) == nil and W.feeds(nil) == nil, "feeds: true when fed, nil when no provider claims it")
+local cutObj = E.object("cut_1", E.square(4, 4, 0))
+W.registerProvider({ id = "cutter", isPowered = function(obj) if obj == cutObj then return false end return nil end })
+check(W.feeds(cutObj) == false and W.wired(cutObj) == false, "feeds: false when a provider claims it and it is cut")
+W.providers["cutter"] = nil
 local working = false
 W.registerLoad({ id = "testpump", kind = "waterpump", match = function(obj) return obj.sprite == "pump_1" end,
                  watts = function() return 400 end, working = function() return working end })

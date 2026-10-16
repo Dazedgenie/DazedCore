@@ -32,6 +32,7 @@ end
 --  `kind` names the LOADS-page label (IGUI_DazedPower_Load_<kind>); `items` lists the item types it is placed from.
 --  Optional speed-ups: `prefix` (sprite names must start with it) and `matchName(spriteName)` are tested before `match`,
 --  and `byName = true` says `match` depends on the sprite name alone, so its verdict is remembered per name.
+--  Optional `slotless = true`: the power mod need not count the load against a controller's slots (the load still cables).
 function W.registerLoad(l)
     if type(l) ~= "table" or type(l.id) ~= "string" or type(l.match) ~= "function" then return nil end
     if not W.loads[l.id] then W.order[#W.order + 1] = l.id end
@@ -124,6 +125,26 @@ function W.wired(obj)
         if ok and on == true then return true end
     end
     return false
+end
+
+--- Tri-state wire verdict: true when a provider feeds the object, false when a provider claims it but has it cut
+--  (shed, tripped, offline), nil when no provider claims it. wired() is unchanged and treats false and nil alike.
+function W.feeds(obj)
+    if not obj then return nil end
+    local cut = false
+    for _, p in pairs(W.providers) do
+        local ok, on = pcall(p.isPowered, obj)
+        if ok then
+            if on == true then return true end
+            if on == false then cut = true end
+        end
+    end
+    if W.legacyHook then
+        local ok, on = pcall(W.legacyHook, obj)
+        if ok and on == true then return true end
+    end
+    if cut then return false end
+    return nil
 end
 
 --- Has this object power: by wire, or from the square it stands on (town grid or a generator)?
