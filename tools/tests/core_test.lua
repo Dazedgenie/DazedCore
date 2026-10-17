@@ -1,6 +1,6 @@
 -- Headless check of the small core modules: Util text, Sync, Note, Power registry, Migrate.
 -- Run: lua core_test.lua <lua root>
-local root = arg[1] or "../../common/media/lua"
+local root = arg[1] or "../../Contents/mods/DazedCore/common/media/lua"
 local E = dofile("engine_stub.lua")
 local print = E.realPrint
 package.path = root .. "/shared/?.lua;" .. root .. "/client/?.lua;" .. package.path

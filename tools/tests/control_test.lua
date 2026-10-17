@@ -1,7 +1,7 @@
 -- Headless check of Dazed Control (DC_Control): tab order, staff levels, the act path (only named commands, the level
 -- each needs, the target resolved by the authority), buttons a tab does not name dropped from its view, and the log.
 -- Run: lua control_test.lua <lua root>
-local root = arg[1] or "../../common/media/lua"
+local root = arg[1] or "../../Contents/mods/DazedCore/common/media/lua"
 local E = dofile("engine_stub.lua")
 local print = E.realPrint
 package.path = root .. "/shared/?.lua;" .. root .. "/client/?.lua;" .. package.path

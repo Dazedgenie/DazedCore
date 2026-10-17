@@ -3,7 +3,7 @@
 Shared library for the Dazed mods for Project Zomboid Build 42. It does nothing on its own.
 **Required by** *Dazed Plumbing* 0.10 and later and *Dazed Power*.
 
-- **Mod ID:** `DazedCore` · **Version:** 1.8.2 · **Game:** Build 42 · **Load order:** before any other Dazed mod (`require=DazedCore` in theirs)
+- **Mod ID:** `DazedCore` · **Version:** 1.9.0 · **Game:** Build 42 · **Load order:** before any other Dazed mod (`require=DazedCore` in theirs)
 
 ## What it holds
 
@@ -17,21 +17,28 @@ Shared library for the Dazed mods for Project Zomboid Build 42. It does nothing 
 | `DC_Note` (+ `DC_NoteClient`) | `DazedCore.Note` | A line above a player's head; on a server the translation key travels and the client shows it. `limited` for refusals the cursor asks every frame. |
 | `DC_Migrate` | `DazedCore.Migrate` | Schema versions on saved ModData, so a later release can change what it stores. |
 | `DC_Detect` | `DazedCore.Detect` | Which mods are loaded. A feature registers the mod IDs that already do it (`yieldTo`); `yields(feature)` says whether to step aside, logged once. |
-| `DC_Net` | `DazedCore.Net` | Client asks, authority acts: `on(module, command, fn, every)` server handlers with a per-player rate limit, `send` (runs at once in single player), `reply`/`onClient` for answers, `near` range check. |
+| `DC_Net` | `DazedCore.Net` | Client asks, authority acts: `on(module, command, fn, every)` server handlers with a per-player rate limit (registering the same module.command twice prints a warning), `send` (runs at once in single player), `reply`/`onClient` for answers, `broadcast` to every client, `near` range check. |
 | `DC_Options` (client) | `DazedCore.Options` | One "Dazed Core" page in the Mods options tab that every mod adds its tick boxes and drop-downs to, including the suite-wide temperature units. |
 | `DC_Report` (client) | `DazedCore.Report` | One Error Magnifier report with a section per mod. |
-| `DC_Util` | `DazedCore.Util` | `try`, tile `prop`/`propIs`, `memo1` for one-argument lookups, translated `txt`/`count`, `haloNote`, `worldHours`, `squareAt`. |
+| `DC_Util` | `DazedCore.Util` | `try`, tile `prop`/`propIs`, `memo1` for one-argument lookups, translated `txt`/`count`, `haloNote`, `worldHours`, `squareAt`, `clamp`, `players()` (every player on this machine or server, never nil). |
 | `DC_DebugSpawn` (+ `DC_DebugSpawnMenu`) | `DazedCore.DebugSpawn` | A mod registers its items (`register(id, name, items)`); in debug mode, or for staff, the right-click menu's **Dazed debug** row spawns them all and places them in a ring of open squares around the player, through vanilla's own place call so every mod's placing hooks run. |
 | `DC_ClearArea` (in the same **Dazed debug** menu) | `DazedCore.ClearArea` | Debug action: empties a circle (5 to 30 tiles) around the player of zombies, corpses, vehicles, placed or moveable objects and ground items, on the authority, after a yes/no. |
 | `DC_Control` (+ `DC_ControlWindow`, `DC_ControlOpen`) | `DazedCore.Control` | **Dazed Control**, the staff panel. A mod adds a tab with `register(id, { title, order, view, commands })`: `view(viewer)` runs on the authority and returns plain data (lamps, cards with rows, items, log lines and buttons); each button runs one of the Net commands the tab names in `commands`, at the level named there (`"admin"` or `"mod"`). Admins use every button, moderators look; debug mode counts as admin. Every action is logged to the console, `Zomboid/Lua/DazedControl.log` and the Overview tab. Opened from a staff-only sidebar icon or a button in the vanilla admin panel. |
 | `registries.lua` | `DazedCore.PartTags` | The shared part tags (`dazedcore:motor_small`, `dazedcore:compressor` and 18 more), registered before scripts load. Dazed Salvage's parts carry them, and any Dazed mod can name them in a recipe without requiring Salvage. |
-| `DC_Boot` | `DazedCore.Boot` | Loads the shared modules and prints `DazedCore: ready -- ...` with the mods that registered. |
+| `DC_Tick` | `DazedCore.Tick` | The one `OnTick` hook for the suite: `every(id, ms, fn)` and `everyTicks(id, n, fn)` run a job on a period, guarded, the first failure per job printed once; `remove`, `has`, `stats`. Mods put their periodic work here instead of adding `OnTick` and `EveryOneMinute` hooks of their own. |
+| `DC_Menu` | `DazedCore.Menu` | The one right-click dispatcher: `world(id, fn, order)` gets `(player, context, square, objects, worldobjects, test)` with the square's objects collected once; `inventory(id, fn, order)` gets `(player, context, items)`. Each handler is guarded, so one mod's error no longer kills every mod's menu. |
+| `DC_Radio` | `DazedCore.Radio` | `air(freq, x, y, range, text, opts)` on the authority sends a line to every player in range; the client plays it through vanilla's `ZomboidRadio.SendTransmission` (every tuned radio and the radio log), with a halo-note fallback. `onAir(fn)` listeners, `survivorFreq()` shared channel. Used by Dazed Signal and Dazed Air Drops. |
+| `DC_Heat` | `DazedCore.Heat` | `add(x, y, amount, source, opts)` tells registered consumers (`register(name, fn)`) that a spot drew attention (a crate landing, a generator). Core keeps no pools; it does nothing until a consumer such as Dazed Hordes registers. |
+| `DC_Boot` | `DazedCore.Boot` | Loads the shared modules and prints `DazedCore: ready -- ...` with the mods that registered. `require(id, minVersion)` checks the Core version a mod needs and warns the player once (`DazedCore: <mod> needs Dazed Core 1.9.0, have 1.8.4: update Dazed Core`); `atLeast(v)`. |
 
 ## Using it from a mod
 
 ```lua
 require "DazedCore/DC_Boot"
 DazedCore.Boot.register("DazedPlumbing", "0.10.0")
+DazedCore.Boot.require("DazedPlumbing", "1.9.0")        -- warn if the player's Core is older than what I need
+DazedCore.Tick.every("DazedPlumbing.world", 60000, worldPass)   -- instead of my own EveryOneMinute hook
+DazedCore.Menu.world("DazedPlumbing", addPumpOptions)            -- instead of my own OnFillWorldObjectContextMenu hook
 DazedCore.Heavy.register("Base.Dazed")                 -- my heavy items come apart
 DazedCore.Sync.track("DazedPlumbNet")                  -- keep this global table in step
 DazedCore.Power.registerLoad({ id = "dazed_pump", kind = "waterpump", match = isPump, watts = watts, working = working })
@@ -44,12 +51,17 @@ targets with `DazedCore.Buildings.decodeTargets` and `DazedCore.Reach.decodeRect
 
 ## Tests
 
-`lua run_all.lua` in `tools/tests` runs the headless checks with any Lua 5.3+ on PATH as `lua`
-(set `LUA="luatex --luaonly"` to use that instead). `engine_stub.lua` is the shared stand-in for the game engine; the other
-Dazed mods' tests use it as well.
+`lua run_all.lua` in `tools/tests` (at the repository root, outside `Contents`, so it is not uploaded to the Workshop)
+runs the headless checks with any Lua 5.3+ on PATH as `lua` (set `LUA="luatex --luaonly"` to use that instead).
+`engine_stub.lua` is the shared stand-in for the game engine; the other Dazed mods' tests use it as well, checked out
+beside their repo as `../DazedCore`. `.github/workflows/tests.yml` runs them on every push and lints for the known B42
+traps (`next(`, commas in `DisplayName`, `hasTag` with a string); copy it into any Dazed repo and add the
+`DAZED_REPO_TOKEN` secret so the workflow can check out this private repo.
 
 ## Tools
 
+Everything under `tools/` lives at the repository root and is never part of the Workshop upload
+(`tools/workshop/steam_upload.py` also leaves out `*Test` mods, Python, Markdown and source art, and prints what it skipped).
 `tools/pzformat` reads and writes `.pack` and `.tiles` files; `tools/blender/pz_sprite_forge.py` is the render rig
 the Dazed mods' sprites are made with; `pack_art.py` and `pack_tiles.py` put rendered cells into a pack and check a
 tiledef. All need Python 3 with Pillow (and Blender 4.2+ for the rig).
@@ -64,6 +76,15 @@ its licence ships in those folders.
 
 ## Changes
 
+- **1.9.0.** Suite structure release (see the 2026-10-17 structure review).
+  - **Tick:** `DazedCore.Tick`, one `OnTick` hook with `every(id, ms, fn)` / `everyTicks(id, n, fn)`; mods move their own tick and minute hooks onto it.
+  - **Menu:** `DazedCore.Menu`, one guarded right-click dispatcher for world and inventory menus (`world`, `inventory`), the square's objects collected once; a failing handler is printed once and the other mods' rows still appear.
+  - **Radio** and **Heat:** `DazedCore.Radio.air` / `onAir` / `survivorFreq`, and `DazedCore.Heat.add` / `register`, the shared radio and attention helpers Signal, Air Drops and Hordes agreed on.
+  - **Boot:** `Boot.require(id, minVersion)` and `Boot.atLeast(v)`; the ready line adds `<mod> NEEDS CORE <min>` for a mod whose Core is too old.
+  - **Net:** `N.broadcast(module, command, args)` to every client; registering a handler twice for one module.command prints a warning (the later one is used).
+  - **Util:** `U.clamp(v, lo, hi)` and `U.players()`.
+  - **Packaging:** `tools/` moved out of `Contents/mods/DazedCore` to the repository root, the stray `lupa` wheel removed from the mod folder, and the uploader now stages a copy of `Contents` without tools, tests, test mods, Python, Markdown or source art. New `tests.yml` (headless tests and B42 lint on every push, a template for every Dazed repo) and `release-set.yml` (uploads Core, then Power, then Dank, then any others, each waiting for the previous).
+  - Tests: `tick_menu_test.lua`, `radio_heat_test.lua`.
 - **1.8.4.** `DazedCore.Power.feeds(obj)`: a tri-state wire verdict (true fed, false claimed but cut, nil not claimed) so a load can tell "wired and cut" from "not wired". Loads may set `slotless = true`. `wired()` is unchanged.
 - **1.8.3.** Debug **Clear area**: in debug mode, or for staff, right-click the ground, **Dazed debug**, **Clear area**, pick 5, 10, 20 or 30 tiles and confirm. The server removes every zombie and corpse, every vehicle (not the one you sit in), every placed or moveable object (furniture, crates, generators, built items) and every loose item on the ground in that circle, on all floors. Walls, floors, doors, windows, stairs and trees stay. It cannot be undone, and map furniture counts as moveable.
 - **1.8.2.** Dazed Control gets a **Fixes** tab: any Dazed mod can add a one-off repair with `DazedCore.Control.registerFix(id, { title, desc, mod, scope = "player" or "world", run = fn(staff, info) })`, and staff run it on the target player or spot (admins only, logged). Other mods add their own Dazed Control tabs (Power, Dank, Plumbing, Pastimes) in their own updates.

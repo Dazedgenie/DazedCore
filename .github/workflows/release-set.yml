@@ -1,0 +1,87 @@
+# Uploads a set of Dazed mods to the Steam Workshop in dependency order: Dazed Core first, then the
+# mods ticked below, each one waiting for the previous upload to finish. Every upload is the mod's own
+# "Workshop upload" workflow in its own repo, run with the same change note, so each repo's workshop.txt,
+# preview and secrets apply as usual.
+#
+# Needs the DAZED_REPO_TOKEN secret: a fine-grained token with Actions read and write on the repos
+# listed below (Core's own upload can run on the default token). Kyle's rule stands: never run this for
+# Core, or for untested main, without asking, because the DazedInfected server runs the Steam copies.
+name: Release set (Core first)
+
+on:
+  workflow_dispatch:
+    inputs:
+      change_note:
+        description: "Change note for every Workshop page in the set"
+        required: true
+      core:
+        description: "Upload Dazed Core"
+        type: boolean
+        default: true
+      power:
+        description: "Then Dazed Power"
+        type: boolean
+        default: true
+      dank:
+        description: "Then Dazed Dank"
+        type: boolean
+        default: true
+      others:
+        description: "Then these repos too, in this order (comma separated, e.g. DazedPlumbing,DazedPowerEV)"
+        required: false
+        default: ""
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: release-set
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      GH_TOKEN: ${{ secrets.DAZED_REPO_TOKEN || github.token }}
+      OWNER: ${{ github.repository_owner }}
+    steps:
+      - name: Upload each mod in order
+        env:
+          NOTE: ${{ github.event.inputs.change_note }}
+          DO_CORE: ${{ github.event.inputs.core }}
+          DO_POWER: ${{ github.event.inputs.power }}
+          DO_DANK: ${{ github.event.inputs.dank }}
+          OTHERS: ${{ github.event.inputs.others }}
+        run: |
+          set -e
+          repos=()
+          [ "$DO_CORE" = "true" ] && repos+=("DazedCore")
+          [ "$DO_POWER" = "true" ] && repos+=("DazedPower")
+          [ "$DO_DANK" = "true" ] && repos+=("DazedDank")
+          IFS=',' read -ra extra <<< "$OTHERS"
+          for r in "${extra[@]}"; do
+            r=$(echo "$r" | tr -d ' ')
+            if [ -n "$r" ] && ! [[ "$r" =~ ^[A-Za-z0-9._-]+$ ]]; then echo "::error::bad repo name: $r"; exit 1; fi
+            [ -n "$r" ] && repos+=("$r")
+          done
+          echo "Order: ${repos[*]}"
+          for repo in "${repos[@]}"; do
+            echo "::group::$repo"
+            before=$(gh run list -R "$OWNER/$repo" -w workshop-upload.yml --event workflow_dispatch --limit 1 --json databaseId -q '.[0].databaseId // 0')
+            gh workflow run workshop-upload.yml -R "$OWNER/$repo" -f change_note="$NOTE" -f update_description=true
+            # Find the run we just started (it can take a few seconds to appear).
+            run_id=""
+            for _ in $(seq 1 30); do
+              sleep 5
+              run_id=$(gh run list -R "$OWNER/$repo" -w workshop-upload.yml --event workflow_dispatch --limit 1 --json databaseId -q '.[0].databaseId // 0')
+              [ "$run_id" != "$before" ] && [ "$run_id" != "0" ] && break
+              run_id=""
+            done
+            if [ -z "$run_id" ]; then echo "::error::$repo: the upload run did not start"; exit 1; fi
+            echo "Watching $repo run $run_id"
+            gh run watch "$run_id" -R "$OWNER/$repo" --exit-status
+            echo "::endgroup::"
+          done
+          echo "All uploads finished: ${repos[*]}"

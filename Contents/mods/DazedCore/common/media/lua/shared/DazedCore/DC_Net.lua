@@ -29,6 +29,12 @@ end
 function N.on(module, command, fn, every)
     if type(module) ~= "string" or type(command) ~= "string" or type(fn) ~= "function" then return end
     N.server[module] = N.server[module] or {}
+    local had = N.server[module][command]
+    if had and had.fn ~= fn then
+        -- Two pieces of code claim the same module.command: the later one wins, as before, but say so,
+        -- because two Dazed mods picking the same module name would otherwise fail silently.
+        print("DazedCore: Net handler " .. module .. "." .. command .. " registered twice; the later one is used")
+    end
     N.server[module][command] = { fn = fn, every = every }
 end
 
@@ -92,6 +98,19 @@ function N.reply(player, module, command, args)
     end
     local fn = N.client[module] and N.client[module][command]
     if fn then pcall(fn, args or {}, player) end
+end
+
+--- Tell every client (a server command with no player). In single player the client handler runs at once
+--  for the local player; on a client this does nothing (clients never broadcast).
+function N.broadcast(module, command, args)
+    if onServer() then
+        if sendServerCommand then pcall(sendServerCommand, module, command, args or {}) end
+        return true
+    end
+    if onClient() then return false end
+    local fn = N.client[module] and N.client[module][command]
+    if fn then pcall(fn, args or {}, getPlayer and getPlayer() or nil) end
+    return true
 end
 
 --- Server-side check that a player stands within `max` tiles of x, y on the same floor.

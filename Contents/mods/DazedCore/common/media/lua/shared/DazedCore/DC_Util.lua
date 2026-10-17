@@ -2,7 +2,7 @@
      properties, translated text with {1} placeholders, and halo notes. ]]
 
 DazedCore = DazedCore or {}
-DazedCore.VERSION = "1.8.4"
+DazedCore.VERSION = "1.9.0"
 DazedCore.Util = DazedCore.Util or {}
 local U = DazedCore.Util
 
@@ -123,6 +123,39 @@ end
 function U.squareAt(x, y, z)
     local cell = getCell and getCell()
     return cell and try(cell, "getGridSquare", x, y, z) or nil
+end
+
+--- v held between lo and hi (either bound may be nil).
+function U.clamp(v, lo, hi)
+    if lo and v < lo then return lo end
+    if hi and v > hi then return hi end
+    return v
+end
+
+--- Every player this side knows of, as a plain array (never nil): the online players on a server,
+--  the local players (split screen included) on a client or in single player.
+function U.players()
+    local out = {}
+    if isServer and isServer() and getOnlinePlayers then
+        local list = getOnlinePlayers()
+        local n = list and list.size and list:size() or 0
+        for i = 0, n - 1 do
+            local p = list:get(i)
+            if p then out[#out + 1] = p end
+        end
+        return out
+    end
+    if getSpecificPlayer then
+        for i = 0, 3 do
+            local p = getSpecificPlayer(i)
+            if p then out[#out + 1] = p end
+        end
+    end
+    if #out == 0 and getPlayer then
+        local p = getPlayer()
+        if p then out[1] = p end
+    end
+    return out
 end
 
 --- Iterate a Java list: fn(item) for each.

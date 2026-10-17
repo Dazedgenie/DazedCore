@@ -1,6 +1,6 @@
 -- Headless check of Detect (mod lookup, yield cache) and Net (local dispatch, rate limit, client path, near).
 -- Run: lua net_test.lua <lua root>
-local root = arg[1] or "../../common/media/lua"
+local root = arg[1] or "../../Contents/mods/DazedCore/common/media/lua"
 local E = dofile("engine_stub.lua")
 local print = E.realPrint
 package.path = root .. "/shared/?.lua;" .. root .. "/client/?.lua;" .. package.path

@@ -17,7 +17,7 @@ sys.path.insert(0, str(HERE / "pzformat"))
 from tiledef import TileDefinitions, Tile  # noqa: E402
 from packfile import TexturePack  # noqa: E402
 
-MEDIA = HERE.parent / "common/media"
+MEDIA = HERE.parent / "Contents/mods/DazedCore/common/media"
 TILES = MEDIA / "dazedplumbing_tiles.tiles"
 TXT = MEDIA / "dazedplumbing_tiles.tiles.txt"
 PACK = MEDIA / "texturepacks/dazedplumbing.pack"

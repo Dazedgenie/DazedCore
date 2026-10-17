@@ -1,7 +1,7 @@
 -- Headless check of DebugSpawn: the ring order, who may use it, and placing on a stand-in moveable system
 -- (blocked squares skipped, a gap kept, a 2-square part, a wall part trying its other facings, loose items kept).
 -- Run: lua debugspawn_test.lua <lua root>
-local root = arg[1] or "../../common/media/lua"
+local root = arg[1] or "../../Contents/mods/DazedCore/common/media/lua"
 local E = dofile("engine_stub.lua")
 local print = E.realPrint
 package.path = root .. "/shared/?.lua;" .. root .. "/client/?.lua;" .. package.path

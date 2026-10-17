@@ -14,7 +14,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE / "pzformat"))
 from packfile import TexturePack, PackEntry  # noqa: E402
 
-PACK = HERE.parent / "common/media/texturepacks/dazedplumbing.pack"
+PACK = HERE.parent / "Contents/mods/DazedCore/common/media/texturepacks/dazedplumbing.pack"
 CW, CH, PAGE_W = 128, 256, 2048
 
 

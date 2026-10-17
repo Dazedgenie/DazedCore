@@ -1,6 +1,6 @@
 -- Headless check of DC_Reach footprints and DC_Buildings' codec, reach test and map-building resolver
 -- against a stand-in metagrid. Run: lua buildings_test.lua <lua root>
-local root = arg[1] or "../../common/media/lua"
+local root = arg[1] or "../../Contents/mods/DazedCore/common/media/lua"
 local E = dofile("engine_stub.lua")
 local print = E.realPrint
 package.path = root .. "/shared/?.lua;" .. package.path

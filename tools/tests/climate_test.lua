@@ -1,5 +1,5 @@
 -- Checks for the shared climate lookup (DC_Climate). Run from run_all.sh.
-local root = arg[1] or "../../common/media/lua"
+local root = arg[1] or "../../Contents/mods/DazedCore/common/media/lua"
 local E = dofile("engine_stub.lua")
 local print = E.realPrint
 package.path = root .. "/shared/?.lua;" .. package.path

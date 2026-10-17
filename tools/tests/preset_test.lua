@@ -1,5 +1,5 @@
 -- Checks for the sandbox preset switch (DC_Preset). Run from run_all.sh.
-local root = arg[1] or "../../common/media/lua"
+local root = arg[1] or "../../Contents/mods/DazedCore/common/media/lua"
 local E = dofile("engine_stub.lua")
 local print = E.realPrint
 package.path = root .. "/shared/?.lua;" .. root .. "/client/?.lua;" .. package.path

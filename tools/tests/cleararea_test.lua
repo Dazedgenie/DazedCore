@@ -1,7 +1,7 @@
 -- Headless check of ClearArea: what it removes (zombies, vehicles, placed objects, ground items, corpses), what it
 -- leaves (floors, walls, trees, the requester's vehicle, anything outside the circle) and who may ask.
 -- Run: lua cleararea_test.lua <lua root>
-local root = arg[1] or "../../common/media/lua"
+local root = arg[1] or "../../Contents/mods/DazedCore/common/media/lua"
 local E = dofile("engine_stub.lua")
 local print = E.realPrint
 package.path = root .. "/shared/?.lua;" .. root .. "/client/?.lua;" .. package.path

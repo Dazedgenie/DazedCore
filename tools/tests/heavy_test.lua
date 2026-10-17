@@ -1,7 +1,7 @@
 -- Headless check of DC_HeavyParts: splitting, the all-parts rule, consuming a set on placing,
 -- both engine argument orders, and upgrading a version-1 copy left by an older mod.
 -- Run: lua heavy_test.lua <lua root>
-local root = arg[1] or "../../common/media/lua"
+local root = arg[1] or "../../Contents/mods/DazedCore/common/media/lua"
 local fails, checks = 0, 0
 local function check(c, m) checks = checks + 1 if not c then fails = fails + 1; print("FAIL " .. m) end end
 local WEIGHT = { ["Base.DazedPropaneGen"] = 60, ["Base.DazedPedalGen"] = 30, ["Base.DazedXL"] = 95, ["Base.Other"] = 90 }

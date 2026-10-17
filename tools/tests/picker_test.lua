@@ -1,6 +1,6 @@
 -- Headless check of the Building Picker's hover: a still cursor sees a new served list, and the recheck timer.
 -- Run: lua picker_test.lua <lua root>
-local root = arg[1] or "../../common/media/lua"
+local root = arg[1] or "../../Contents/mods/DazedCore/common/media/lua"
 local E = dofile("engine_stub.lua")
 local print = E.realPrint
 package.path = root .. "/shared/?.lua;" .. root .. "/client/?.lua;" .. package.path

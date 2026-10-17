@@ -1,7 +1,7 @@
 -- Headless check of the Dazed Control window (DC_ControlWindow): every kind of view block draws without an error,
 -- buttons get click regions (greyed ones none), a danger button needs a second click, a stale tab answer is dropped,
 -- and the target cycles me -> other players -> me. Run: lua controlwindow_test.lua <lua root>
-local root = arg[1] or "../../common/media/lua"
+local root = arg[1] or "../../Contents/mods/DazedCore/common/media/lua"
 local E = dofile("engine_stub.lua")
 local print = E.realPrint
 package.path = root .. "/shared/?.lua;" .. root .. "/client/?.lua;" .. package.path

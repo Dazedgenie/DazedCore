@@ -14,7 +14,24 @@ PLACEHOLDER = re.compile(r"%\d+|\{\d+\}|%%|<[A-Z]+>")
 
 
 def tr_root(mod):
-    return Path(mod) / "common/media/lua/shared/Translate"
+    """Translate folder of a mod given as its repo (DazedPower), its mod folder (Contents/mods/DazedPower)
+    or a Translate folder itself; both the common/ and 42/ layouts are found."""
+    p = Path(mod)
+    if p.name == "Translate":
+        return p
+    mods = p / "Contents" / "mods"
+    if mods.is_dir():
+        subs = [d for d in mods.iterdir() if d.is_dir()]
+        if len(subs) == 1:
+            p = subs[0]
+        else:
+            same = [d for d in subs if d.name == Path(mod).name]
+            p = same[0] if same else subs[0]
+    for layout in ("common", "42"):
+        cand = p / layout / "media/lua/shared/Translate"
+        if cand.is_dir():
+            return cand
+    return p / "common/media/lua/shared/Translate"
 
 
 def load(path):
