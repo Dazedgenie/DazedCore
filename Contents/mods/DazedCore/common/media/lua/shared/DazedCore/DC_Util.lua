@@ -12,7 +12,9 @@ U.NOTE_TIME = 300
 --- Call a method on an engine object; a missing method or an engine error answers nil.
 function U.try(obj, method, ...)
     if not obj or not obj[method] then return nil end
+    U._tryMethod = method
     local ok, v = pcall(obj[method], obj, ...)
+    U._tryMethod = nil
     if ok then return v end
     return nil
 end
