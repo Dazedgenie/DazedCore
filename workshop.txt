@@ -3,7 +3,7 @@ id=3817321560
 title=Dazed Core
 description=[b]Disclaimer: this mod was made with AI assistance.[/b] If you're not comfortable with that, please stop reading here.
 description=
-description=[img]https://raw.githubusercontent.com/Dazedgenie/Dazed-Workshop/main/Core/images/banner.jpg?v=2[/img]
+description=[img]https://raw.githubusercontent.com/Dazedgenie/Dazed-Workshop/main/Core/images/banner.jpg?v=3[/img]
 description=
 description=[h1]Dazed Core[/h1]
 description=[b]The shared foundation of the Dazed mod suite for Build 42.[/b]
