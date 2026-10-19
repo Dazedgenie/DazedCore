@@ -56,7 +56,7 @@ description=
 description=[hr][/hr]
 description=
 description=[img]https://raw.githubusercontent.com/Dazedgenie/Dazed-Workshop/main/Core/images/h-authors.png?v=2[/img]
-description=Dazed Core is a library other mods can build on: a power registry (register a provider or a load and ask [i]isPowered(obj)[/i] about any object), building and reach resolution, synced ModData tables, a client-to-authority request layer with rate limits, mod detection so features can yield to another mod, schema migration, one temperature lookup for every mod, 20 shared part tags (motors, compressors, copper tubing, wiring harnesses and more) that any Dazed recipe can name, a debug spawn menu mods add item sets to, and a shared Error Magnifier report. Full API notes and headless tests are in the GitHub repo.
+description=Dazed Core is a library other mods can build on: a power registry (register a provider or a load and ask [i]isPowered(obj)[/i] about any object), building and reach resolution, synced ModData tables, a client-to-authority request layer with rate limits, mod detection so features can yield to another mod, schema migration, one temperature lookup for every mod, 20 shared part tags (motors, compressors, copper tubing, wiring harnesses and more) that any Dazed recipe can name, a debug spawn menu mods add item sets to, a shared Error Magnifier report, and (new in 1.9.0) one tick scheduler, one guarded right-click menu dispatcher, shared radio-broadcast and heat helpers, and a version check that warns once when a Dazed mod needs a newer Core than you have. Full API notes and headless tests are in the GitHub repo.
 description=
 description=[url=https://github.com/Dazedgenie/DazedCore]Source on GitHub[/url]
 description=
@@ -77,6 +77,6 @@ description=
 description=[h2]Credits and licence[/h2]
 description=The building resolver and Building Picker are adapted from [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3789425624]Off-Grid: Solar Power[/url] by cakcan, with the author's licence (CC BY-NC-SA 4.0). Dazed Core is released under the same licence. Sprite tooling from pz-sprite-forge (MIT).
 description=
-description=[i]Mod ID: DazedCore · Version 1.8.4[/i]
+description=[i]Mod ID: DazedCore · Version 1.9.0[/i]
 tags=Build 42;Framework;Multiplayer
 visibility=unlisted
