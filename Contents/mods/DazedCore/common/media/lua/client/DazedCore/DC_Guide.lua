@@ -22,26 +22,91 @@ function G.add(book)
     G.books[#G.books + 1] = book
 end
 
-G.add({ id = "core", titleKey = "IGUI_DazedGuide_Book_core", present = function() return true end,
-        pages = { "CoreStart", "CoreHeavy", "CorePresets", "CorePicker" } })
+-- A mod is present when its ID is in the active mod list (the lowercase helper keeps the entries below short).
+local function mod(id)
+    local D = DazedCore.Detect
+    return D ~= nil and D.isActive(id)
+end
+
+-- One tab per Dazed mod, each shown only while that mod is enabled.
+G.add({ id = "core", titleKey = "IGUI_DazedGuide_Book_core",
+        present = function() return true end,
+        pages = { "CoreStart", "CoreHeavy", "CorePresets", "CorePicker", "CoreOptions" } })
 G.add({ id = "power", titleKey = "IGUI_DazedGuide_Book_power",
         present = function() return DazedPower ~= nil and DazedPower.Parts ~= nil end,
-        pages = { "PowerStart", "PowerWiring", "PowerMonitor", "PowerBatteries", "PowerSources", "PowerLoads",
-                  "PowerCharging", "PowerHazards" } })
+        pages = { "PowerStart", "PowerWiring", "PowerMonitor", "PowerBatteries", "PowerSources", "PowerMuscle",
+                  "PowerLoads", "PowerExtras", "PowerCharging", "PowerHazards" } })
+G.add({ id = "powerev", titleKey = "IGUI_DazedGuide_Book_powerev",
+        present = function() return mod("DazedPowerEV") end,
+        pages = { "EVStart", "EVBatteries", "EVCharging", "EVTrailers" } })
 G.add({ id = "plumbing", titleKey = "IGUI_DazedGuide_Book_plumbing",
         present = function() return DazedPlumb ~= nil end,
-        pages = { "PlumbStart", "PlumbPumps", "PlumbQuality", "PlumbRain", "PlumbMain", "PlumbFuel",
-                  "PlumbDigester", "PlumbSprinkler" } })
--- The rest of the Dazed suite: each tab shows only while its mod is enabled.
-G.add({ id = "butchery", titleKey = "IGUI_DazedGuide_Book_butchery",
-        present = function() return DazedButchery ~= nil end,
-        pages = { "ButchStart", "ButchCut", "ButchGrades", "ButchField", "ButchEdge" } })
-G.add({ id = "cooking", titleKey = "IGUI_DazedGuide_Book_cooking",
-        present = function() return DazedCooking ~= nil end,
-        pages = { "CookStart", "CookMood", "CookPortion" } })
+        pages = { "PlumbStart", "PlumbPumps", "PlumbQuality", "PlumbRain", "PlumbMain", "PlumbPanel",
+                  "PlumbFuel", "PlumbDigester", "PlumbSmoker", "PlumbSprinkler", "PlumbFreeze" } })
+G.add({ id = "climate", titleKey = "IGUI_DazedGuide_Book_climate",
+        present = function() return mod("DazedClimate") end,
+        pages = { "ClimStart", "ClimRooms", "ClimCrops", "ClimBody" } })
 G.add({ id = "dank", titleKey = "IGUI_DazedGuide_Book_dank",
         present = function() return CannabisMod ~= nil end,
-        pages = { "DankStart", "DankLights", "DankBags", "DankHydro", "DankRooms", "DankClimate", "DankDrying", "DankSmoking" } })
+        pages = { "DankStart", "DankLights", "DankBags", "DankHydro", "DankRooms", "DankClimate", "DankDrying",
+                  "DankSmoking", "DankPower", "DankViewpoint" } })
+G.add({ id = "butchery", titleKey = "IGUI_DazedGuide_Book_butchery",
+        present = function() return DazedButchery ~= nil end,
+        pages = { "ButchStart", "ButchCut", "ButchGrades", "ButchField", "ButchEdge", "ButchRender" } })
+G.add({ id = "cooking", titleKey = "IGUI_DazedGuide_Book_cooking",
+        present = function() return DazedCooking ~= nil end,
+        pages = { "CookStart", "CookMood", "CookPortion", "CookWindow", "CookDrying" } })
+G.add({ id = "still", titleKey = "IGUI_DazedGuide_Book_still",
+        present = function() return mod("DazedStill") end,
+        pages = { "StillStart", "StillDistil", "StillAge" } })
+G.add({ id = "essentials", titleKey = "IGUI_DazedGuide_Book_essentials",
+        present = function() return mod("DazedEssentials") end,
+        pages = { "EssPry", "EssBulk", "EssMirror", "EssGear", "EssRead" } })
+G.add({ id = "salvage", titleKey = "IGUI_DazedGuide_Book_salvage",
+        present = function() return mod("DazedSalvage") end,
+        pages = { "SalvStart", "SalvStrip", "SalvCars" } })
+G.add({ id = "pastimes", titleKey = "IGUI_DazedGuide_Book_pastimes",
+        present = function() return mod("DazedPastimes") end,
+        pages = { "PastStart", "PastGames", "PastStakes" } })
+G.add({ id = "defences", titleKey = "IGUI_DazedGuide_Book_defences",
+        present = function() return mod("DazedDefences") end,
+        pages = { "DefTraps", "DefBrace" } })
+G.add({ id = "signal", titleKey = "IGUI_DazedGuide_Book_signal",
+        present = function() return mod("DazedSignal") end,
+        pages = { "SigMasts", "SigBeacons", "SigRelay" } })
+G.add({ id = "hud", titleKey = "IGUI_DazedGuide_Book_hud",
+        present = function() return mod("DazedHUD") end,
+        pages = { "HudStart", "HudSkin", "HudMarks" } })
+G.add({ id = "armory", titleKey = "IGUI_DazedGuide_Book_armory",
+        present = function() return mod("DazedArmory") end,
+        pages = { "ArmStart", "ArmAttach", "ArmReload" } })
+G.add({ id = "habits", titleKey = "IGUI_DazedGuide_Book_habits",
+        present = function() return mod("DazedHabits") end,
+        pages = { "HabMeds", "HabStreet", "HabRisk" } })
+G.add({ id = "occupations", titleKey = "IGUI_DazedGuide_Book_occupations",
+        present = function() return mod("DazedOccupations") end,
+        pages = { "OccStart", "OccTraits" } })
+G.add({ id = "farming", titleKey = "IGUI_DazedGuide_Book_farming",
+        present = function() return mod("DazedFarming") end,
+        pages = { "FarmTools", "FarmTractors", "FarmImplements" } })
+G.add({ id = "stormprep", titleKey = "IGUI_DazedGuide_Book_stormprep",
+        present = function() return mod("DazedStormPrep") end,
+        pages = { "StormRadio", "StormBoard" } })
+G.add({ id = "airdrops", titleKey = "IGUI_DazedGuide_Book_airdrops",
+        present = function() return mod("DazedAirDrops") end,
+        pages = { "DropStart", "DropFlares" } })
+G.add({ id = "trader", titleKey = "IGUI_DazedGuide_Book_trader",
+        present = function() return mod("DazedTrader") end,
+        pages = { "TradeStart", "TradeBarter" } })
+G.add({ id = "vehicles", titleKey = "IGUI_DazedGuide_Book_vehicles",
+        present = function() return mod("DazedVehicles") end,
+        pages = { "VehStart" } })
+G.add({ id = "sabers", titleKey = "IGUI_DazedGuide_Book_sabers",
+        present = function() return mod("ZomboidSabers") end,
+        pages = { "SabStart" } })
+G.add({ id = "hordes", titleKey = "IGUI_DazedGuide_Book_hordes",
+        present = function() return mod("DazedHordes") end,
+        pages = { "HordeStart" } })
 
 local function txt(key)
     local t = getText(key)
@@ -55,24 +120,18 @@ DC_GuideWindow = ISCollapsableWindow:derive("DC_GuideWindow")
 
 function DC_GuideWindow:createChildren()
     ISCollapsableWindow.createChildren(self)
-    local th = self:titleBarHeight()
-    local fh = getTextManager():getFontHeight(UIFont.Small)
-    local x, y = 8, th + 6
     self.tabs = {}
     for _, b in ipairs(G.books) do
         if b.present() then
-            local w = getTextManager():MeasureStringX(UIFont.Small, getText(b.titleKey)) + 20
-            local btn = ISButton:new(x, y, w, fh + 6, getText(b.titleKey), self, DC_GuideWindow.onTab)
+            local btn = ISButton:new(0, 0, 10, 10, getText(b.titleKey), self, DC_GuideWindow.onTab)
             btn.book = b
             btn:initialise()
             self:addChild(btn)
             self.tabs[#self.tabs + 1] = btn
-            x = x + w + 6
         end
     end
-    local top = y + fh + 14
-    local listW = 170
-    self.list = ISScrollingListBox:new(8, top, listW, self.height - top - 10)
+    local fh = getTextManager():getFontHeight(UIFont.Small)
+    self.list = ISScrollingListBox:new(8, 0, 170, 10)
     self.list:initialise()
     self.list:instantiate()
     self.list.itemheight = fh + 8
@@ -80,7 +139,7 @@ function DC_GuideWindow:createChildren()
     self.list:setOnMouseDownFunction(self, DC_GuideWindow.onPage)
     self.list:setAnchorBottom(true)
     self:addChild(self.list)
-    self.text = ISRichTextPanel:new(listW + 16, top, self.width - listW - 24, self.height - top - 10)
+    self.text = ISRichTextPanel:new(186, 0, 10, 10)
     self.text:initialise()
     self.text.autosetheight = false
     self.text.clip = true
@@ -88,7 +147,42 @@ function DC_GuideWindow:createChildren()
     self.text:setAnchorRight(true)
     self.text:setAnchorBottom(true)
     self:addChild(self.text)
+    self:layoutTabs()
     if self.tabs[1] then self:showBook(self.tabs[1].book) end
+end
+
+--- Lay the tab buttons out in rows that wrap at the window width, then fit the list and text below them.
+function DC_GuideWindow:layoutTabs()
+    local th = self:titleBarHeight()
+    local fh = getTextManager():getFontHeight(UIFont.Small)
+    local rowH = fh + 8
+    local x, y = 8, th + 6
+    for _, btn in ipairs(self.tabs) do
+        local w = getTextManager():MeasureStringX(UIFont.Small, btn.title) + 20
+        if x > 8 and x + w > self.width - 8 then x = 8 y = y + rowH end
+        btn:setX(x)
+        btn:setY(y)
+        btn:setWidth(w)
+        btn:setHeight(fh + 6)
+        x = x + w + 6
+    end
+    local top = y + fh + 14
+    local listW = self.list:getWidth()
+    self.list:setY(top)
+    self.list:setHeight(self.height - top - 10)
+    self.text:setY(top)
+    self.text:setX(listW + 16)
+    self.text:setWidth(self.width - listW - 24)
+    self.text:setHeight(self.height - top - 10)
+    self.laidWidth = self.width
+end
+
+function DC_GuideWindow:prerender()
+    ISCollapsableWindow.prerender(self)
+    if self.laidWidth ~= self.width then
+        self:layoutTabs()
+        self.text:paginate()
+    end
 end
 
 function DC_GuideWindow:onTab(button)
@@ -140,7 +234,7 @@ end
 function G.toggle()
     if G.window then G.window:close() return end
     local core = getCore()
-    local w, h = 760, 520
+    local w, h = 860, 560
     local win = DC_GuideWindow:new((core:getScreenWidth() - w) / 2, (core:getScreenHeight() - h) / 2, w, h)
     win:initialise()
     win:addToUIManager()
