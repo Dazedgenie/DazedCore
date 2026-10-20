@@ -38,10 +38,21 @@ local function onFill(player, context, worldobjects, test)
     for _, r in ipairs(CA.RADII) do
         clearSub:addOption(DazedCore.Util.txt("IGUI_DazedCore_ClearRadius", r), worldobjects, onClear, playerObj, r)
     end
+    local groups = {}   -- a set's `group` gets one submenu, made where its first row would go
     for _, id in ipairs(S.order) do
         local set = S.sets[id]
         local label = set.label and getText(set.label) or DazedCore.Util.txt("IGUI_DazedCore_DebugSpawn", set.name)
-        sub:addOption(label, worldobjects, onSpawn, playerObj, id)
+        local menu = sub
+        if set.group then
+            menu = groups[set.group]
+            if not menu then
+                local gHead = sub:addOption(getText(set.group), worldobjects, nil)
+                menu = ISContextMenu:getNew(sub)
+                sub:addSubMenu(gHead, menu)
+                groups[set.group] = menu
+            end
+        end
+        menu:addOption(label, worldobjects, onSpawn, playerObj, id)
     end
 end
 
